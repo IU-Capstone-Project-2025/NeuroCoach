@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  frontend:
+    build: ./apps/frontend
+    ports:
+      - "3000:80"
+  rest-api:
+    build: ./apps/rest-api
+    ports:
+      - "8080:8080"
+  ws-api:
+    build: ./apps/ws-api
+    ports:
+      - "8081:8081"
