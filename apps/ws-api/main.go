@@ -25,7 +25,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/ws", wsHandler)
+	http.HandleFunc("/ws/", wsHandler)
 	fmt.Println("WebSocket API listening on :8081")
 	http.ListenAndServe(":8081", nil)
 }
