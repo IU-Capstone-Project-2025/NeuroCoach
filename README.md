@@ -5,6 +5,7 @@
 - `apps/frontend`: React frontend (Vite)
 - `apps/rest-api`: Go REST API
 - `apps/ws-api`: Go WebSocket API
+- `apps/android-app`: Android app (Flutter)
 - `libs/`: Shared libraries and utilities
 
 ## Development
