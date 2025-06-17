@@ -1,0 +1,437 @@
+openapi: 3.0.0
+info:
+  title: NeuroCoach API
+  description: REST API for the NeuroCoach fitness application
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@neurocoach.com
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://api.neurocoach.com
+    description: Production server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: HTTP status text
+        message:
+          type: string
+          description: Detailed error message
+
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+        password:
+          type: string
+          minLength: 8
+          description: User's password
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+        password:
+          type: string
+          description: User's password
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT authentication token
+        email:
+          type: string
+          format: email
+          description: User's email address
+
+    FitnessProfile:
+      type: object
+      required:
+        - height
+        - weight
+        - age
+        - goal
+        - timeframe
+        - fitness_level
+        - available_minutes
+      properties:
+        height:
+          type: number
+          format: float
+          minimum: 0
+          description: User's height
+        weight:
+          type: number
+          format: float
+          minimum: 0
+          description: User's weight
+        age:
+          type: integer
+          minimum: 13
+          maximum: 120
+          description: User's age
+        goal:
+          type: string
+          enum: [weight_loss, muscle_gain, endurance, flexibility, general_fitness]
+          description: User's fitness goal
+        health_issues:
+          type: array
+          items:
+            type: string
+          description: List of health issues
+        timeframe:
+          type: string
+          enum: [1month, 3months, 6months, 1year]
+          description: Timeframe for achieving the goal
+        fitness_level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+          description: User's current fitness level
+        available_minutes:
+          type: integer
+          minimum: 30
+          maximum: 1000
+          description: Available minutes per workout
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          maxLength: 500
+          description: User's message to the AI coach
+
+    ChatResponse:
+      type: object
+      properties:
+        response:
+          type: string
+          description: AI coach's response
+
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Message ID
+        message:
+          type: string
+          description: Message content
+        response:
+          type: string
+          description: AI response
+        is_user:
+          type: boolean
+          description: Whether the message is from the user
+        created_at:
+          type: string
+          format: date-time
+          description: Message timestamp
+
+    ChatHistory:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+          description: List of chat messages
+
+    WorkoutPlan:
+      type: object
+      properties:
+        plan_id:
+          type: integer
+          description: Plan ID
+        content:
+          type: string
+          description: Workout plan content
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    HealthCheckResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Service status
+        version:
+          type: string
+          description: API version
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Check if the API is running and database is connected
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheckResponse'
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /register:
+    post:
+      summary: Register a new user
+      description: Create a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /login:
+    post:
+      summary: Login user
+      description: Authenticate user and get JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/profile:
+    post:
+      summary: Save user profile
+      description: Save or update user's fitness profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FitnessProfile'
+      responses:
+        '200':
+          description: Profile saved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      summary: Get user profile
+      description: Retrieve user's fitness profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FitnessProfile'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/chat:
+    post:
+      summary: Send message to AI coach
+      description: Send a message to the AI coach and get a response
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/chat/history:
+    get:
+      summary: Get chat history
+      description: Retrieve user's chat history with the AI coach
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Chat history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatHistory'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/generate-plan:
+    post:
+      summary: Generate workout plan
+      description: Generate a new workout plan based on user's profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                regenerate:
+                  type: boolean
+                  description: Force regeneration of the plan
+      responses:
+        '200':
+          description: Plan generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plan:
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/workout-plan:
+    get:
+      summary: Get workout plan
+      description: Retrieve user's current workout plan
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Workout plan retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutPlan'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Plan not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error' 
