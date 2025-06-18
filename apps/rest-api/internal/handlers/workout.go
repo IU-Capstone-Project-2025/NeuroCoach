@@ -11,7 +11,7 @@ func (h *Handlers) GeneratePlan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, map[string]string{"plan": plan})
+	respondWithJSON(w, http.StatusOK, plan)
 }
 
 func (h *Handlers) GetWorkoutPlan(w http.ResponseWriter, r *http.Request) {

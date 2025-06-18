@@ -29,7 +29,8 @@ func NewServiceError(code int, message string, err error) ServiceError {
 }
 
 type BaseService struct {
-	Repo repository.Repository
+	Repo        repository.Repository
+	MongoDBRepo repository.MongoDBRep
 }
 
 func (s *BaseService) GetUserIDFromContext(ctx context.Context) (int, error) {

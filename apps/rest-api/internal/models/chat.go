@@ -1,14 +1,18 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type ChatMessage struct {
-	ID        int       `json:"id"`
-	UserID    int       `json:"-"`
-	Message   string    `json:"message" validate:"required,max=500"`
-	Response  string    `json:"response"`
-	IsUser    bool      `json:"is_user"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	UserID    int                `bson:"user_id" json:"user_id"`
+	Message   string             `bson:"message" json:"message"`
+	Response  string             `bson:"response" json:"response"`
+	IsUser    bool               `bson:"is_user" json:"is_user"`
+	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
 }
 
 type ChatRequest struct {

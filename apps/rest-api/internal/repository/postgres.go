@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 
+	"rest-api/internal/models"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"rest-api/internal/models"
 )
 
 type PostgresRepository struct {
@@ -156,78 +157,78 @@ func (r *PostgresRepository) GetFitnessProfile(ctx context.Context, userID int) 
 }
 
 // Workout plan operations
-func (r *PostgresRepository) SaveWorkoutPlan(ctx context.Context, userID int, plan *models.WorkoutPlan) error {
-	_, err := r.pool.Exec(ctx,
-		`INSERT INTO workout_plans (user_id, content)
-		VALUES ($1, $2)
-		ON CONFLICT (user_id) DO UPDATE SET
-			content = EXCLUDED.content,
-			updated_at = NOW()`,
-		userID, plan.Content)
+// func (r *PostgresRepository) SaveWorkoutPlan(ctx context.Context, userID int, plan *models.WorkoutPlan) error {
+// 	_, err := r.pool.Exec(ctx,
+// 		`INSERT INTO workout_plans (user_id, content)
+// 		VALUES ($1, $2)
+// 		ON CONFLICT (user_id) DO UPDATE SET
+// 			content = EXCLUDED.content,
+// 			updated_at = NOW()`,
+// 		userID, plan.Content)
 
-	return err
-}
+// 	return err
+// }
 
-func (r *PostgresRepository) GetWorkoutPlan(ctx context.Context, userID int) (*models.WorkoutPlan, error) {
-	var plan models.WorkoutPlan
-	err := r.pool.QueryRow(ctx,
-		`SELECT id, content, created_at, updated_at
-		FROM workout_plans
-		WHERE user_id = $1`,
-		userID).Scan(&plan.PlanID, &plan.Content, &plan.CreatedAt, &plan.UpdatedAt)
+// func (r *PostgresRepository) GetWorkoutPlan(ctx context.Context, userID int) (*models.WorkoutPlan, error) {
+// 	var plan models.WorkoutPlan
+// 	err := r.pool.QueryRow(ctx,
+// 		`SELECT id, content, created_at, updated_at
+// 		FROM workout_plans
+// 		WHERE user_id = $1`,
+// 		userID).Scan(&plan.PlanID, &plan.Content, &plan.CreatedAt, &plan.UpdatedAt)
 
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrNotFound
-		}
-		return nil, fmt.Errorf("error getting workout plan: %w", err)
-	}
-	return &plan, nil
-}
+// 	if err != nil {
+// 		if errors.Is(err, pgx.ErrNoRows) {
+// 			return nil, ErrNotFound
+// 		}
+// 		return nil, fmt.Errorf("error getting workout plan: %w", err)
+// 	}
+// 	return &plan, nil
+// }
 
 // Chat operations
-func (r *PostgresRepository) SaveChatMessage(ctx context.Context, message *models.ChatMessage) error {
-	_, err := r.pool.Exec(ctx,
-		`INSERT INTO chat_messages 
-			(user_id, message, response, is_user)
-		VALUES ($1, $2, $3, $4)`,
-		message.UserID, message.Message, message.Response, message.IsUser)
+// func (r *PostgresRepository) SaveChatMessage(ctx context.Context, message *models.ChatMessage) error {
+// 	_, err := r.pool.Exec(ctx,
+// 		`INSERT INTO chat_messages
+// 			(user_id, message, response, is_user)
+// 		VALUES ($1, $2, $3, $4)`,
+// 		message.UserID, message.Message, message.Response, message.IsUser)
 
-	return err
-}
+// 	return err
+// }
 
-func (r *PostgresRepository) GetChatHistory(ctx context.Context, userID int, limit int) ([]models.ChatMessage, error) {
-	rows, err := r.pool.Query(ctx,
-		`SELECT id, message, response, is_user, created_at
-		FROM chat_messages
-		WHERE user_id = $1
-		ORDER BY created_at DESC
-		LIMIT $2`,
-		userID, limit)
+// func (r *PostgresRepository) GetChatHistory(ctx context.Context, userID int, limit int) ([]models.ChatMessage, error) {
+// 	rows, err := r.pool.Query(ctx,
+// 		`SELECT id, message, response, is_user, created_at
+// 		FROM chat_messages
+// 		WHERE user_id = $1
+// 		ORDER BY created_at DESC
+// 		LIMIT $2`,
+// 		userID, limit)
 
-	if err != nil {
-		return nil, fmt.Errorf("error getting chat history: %w", err)
-	}
-	defer rows.Close()
+// 	if err != nil {
+// 		return nil, fmt.Errorf("error getting chat history: %w", err)
+// 	}
+// 	defer rows.Close()
 
-	var messages []models.ChatMessage
-	for rows.Next() {
-		var msg models.ChatMessage
-		if err := rows.Scan(
-			&msg.ID, &msg.Message, &msg.Response,
-			&msg.IsUser, &msg.CreatedAt); err != nil {
-			return nil, fmt.Errorf("error scanning chat message: %w", err)
-		}
-		messages = append(messages, msg)
-	}
+// 	var messages []models.ChatMessage
+// 	for rows.Next() {
+// 		var msg models.ChatMessage
+// 		if err := rows.Scan(
+// 			&msg.ID, &msg.Message, &msg.Response,
+// 			&msg.IsUser, &msg.CreatedAt); err != nil {
+// 			return nil, fmt.Errorf("error scanning chat message: %w", err)
+// 		}
+// 		messages = append(messages, msg)
+// 	}
 
-	// Reverse the order to return oldest first
-	for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
-		messages[i], messages[j] = messages[j], messages[i]
-	}
+// 	// Reverse the order to return oldest first
+// 	for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
+// 		messages[i], messages[j] = messages[j], messages[i]
+// 	}
 
-	return messages, nil
-}
+// 	return messages, nil
+// }
 
 // Health check
 func (r *PostgresRepository) Ping(ctx context.Context) error {

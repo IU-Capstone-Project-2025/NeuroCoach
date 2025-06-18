@@ -15,6 +15,8 @@ type Config struct {
 	JWTSecret     string
 	JWTExpiration time.Duration
 	OpenAIKey     string
+	MongoURI      string
+	MongoDBName   string
 }
 
 func Load() (*Config, error) {
@@ -29,6 +31,8 @@ func Load() (*Config, error) {
 		JWTSecret:     getEnv("JWT_SECRET", "default-secret-change-me"),
 		JWTExpiration: parseDuration(getEnv("JWT_EXPIRATION", "24h")),
 		OpenAIKey:     getEnv("OPENAI_KEY", ""),
+		MongoURI:      getEnv("MONGOURI", "mongodb://user:password@localhost:27017"),
+		MongoDBName:   getEnv("MONGODBNAME", "fitness_ai"),
 	}
 
 	// Validate required fields
