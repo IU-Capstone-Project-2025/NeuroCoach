@@ -74,6 +74,7 @@ func main() {
 		authRouter.HandleFunc("/chat/history", h.GetChatHistory).Methods("GET")
 		authRouter.HandleFunc("/generate-plan", h.GeneratePlan).Methods("POST")
 		authRouter.HandleFunc("/workout-plan", h.GetWorkoutPlan).Methods("GET")
+		authRouter.HandleFunc("/regenerate-plan", h.RegenerateWorkoutPlan).Methods("POST")
 	}
 
 	// Start server

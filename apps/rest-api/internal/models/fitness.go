@@ -24,6 +24,10 @@ type WorkoutPlanRequest struct {
 	Regenerate bool `json:"regenerate"` // Flag to force regeneration
 }
 
+type RegenerateWorkoutPlanRequest struct {
+	Comments string `json:"comments" validate:"required,max=1000"`
+}
+
 type WorkoutPlan struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	UserID    int                `bson:"user_id" json:"user_id"`
@@ -35,12 +39,11 @@ type WorkoutPlan struct {
 }
 
 type Workout struct {
-	WorkoutID      primitive.ObjectID `bson:"workout_id,omitempty" json:"workout_id"`
-	Name           string             `bson:"name" json:"name"`
-	Description    string             `bson:"description" json:"description"`
-	Status         string             `bson:"status" json:"status"`
-	ExperienceGain int                `bson:"experience_gain" json:"experience_gain"`
-	Exercises      []Exercise         `bson:"exercises" json:"exercises"`
+	WorkoutID   primitive.ObjectID `bson:"workout_id,omitempty" json:"workout_id"`
+	Name        string             `bson:"name" json:"name"`
+	Description string             `bson:"description" json:"description"`
+	Status      string             `bson:"status" json:"status"`
+	Exercises   []Exercise         `bson:"exercises" json:"exercises"`
 }
 
 type Exercise struct {
