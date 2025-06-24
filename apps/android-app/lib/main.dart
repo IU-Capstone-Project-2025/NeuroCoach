@@ -1,13 +1,13 @@
-import 'package:android_app/app/app_dependencies.dart';
 import 'package:android_app/app/dependencies_factory.dart';
 import 'package:android_app/app/presentation/scopes/dependencies_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'app/app_dependencies.dart';
 import 'app/app_router.dart';
 
-
 final _appRouter = AppRouter();
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key, required this.dependencies});
