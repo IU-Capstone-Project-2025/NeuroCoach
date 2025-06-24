@@ -1,0 +1,13 @@
+import 'package:android_app/app/app_dependencies.dart';
+import 'package:android_app/features/login/data/repositories/login_network_repository.dart';
+import 'package:android_app/features/login/data/repositories/remember_me_local_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class DependenciesFactory {
+  static AppDependencies build(SharedPreferences prefs) {
+    return AppDependencies(
+      loginRepository: LoginNetworkRepository(),
+      rememberMeRepository: RememberMeLocalRepository(preferences: prefs),
+    );
+  }
+}
