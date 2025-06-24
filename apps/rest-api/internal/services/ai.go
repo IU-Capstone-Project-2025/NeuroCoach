@@ -2,13 +2,19 @@ package services
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
-	"strings"
 	"net/http"
+	"strings"
+	"time"
 
-	"github.com/sashabaranov/go-openai"
 	"rest-api/internal/models"
 	"rest-api/internal/repository"
+
+	"github.com/sashabaranov/go-openai"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type AIService struct {
@@ -16,83 +22,156 @@ type AIService struct {
 	Client *openai.Client
 }
 
-func NewAIService(repo repository.Repository, apiKey string) *AIService {
+func NewAIService(repo repository.Repository, mongoRepo repository.MongoDBRep, apiKey string) *AIService {
 	var client *openai.Client
 	if apiKey != "" {
 		client = openai.NewClient(apiKey)
 	}
 	return &AIService{
-		BaseService: BaseService{Repo: repo},
+		BaseService: BaseService{Repo: repo, MongoDBRepo: mongoRepo},
 		Client:      client,
 	}
 }
 
-func (s *AIService) GenerateWorkoutPlan(ctx context.Context) (string, error) {
+func (s *AIService) GenerateWorkoutPlan(ctx context.Context) (*models.WorkoutPlan, error) {
 	userID, err := s.GetUserIDFromContext(ctx)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// Check if we have a recent plan
-	plan, err := s.Repo.GetWorkoutPlan(ctx, userID)
-	if err == nil && plan != nil {
-		return plan.Content, nil
+	plan, err := s.MongoDBRepo.GetWorkoutPlan(ctx, userID)
+	if err != nil {
+		if !errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, NewServiceError(
+				http.StatusInternalServerError,
+				"Failed to get existed workout plan",
+				err,
+			)
+		}
+	} else if plan != nil {
+		return plan, nil
 	}
 
 	// Get user profile
 	profile, err := s.Repo.GetFitnessProfile(ctx, userID)
 	if err != nil {
-		return "", NewServiceError(
-			http.StatusBadRequest, 
-			"Complete your profile first", 
+		return nil, NewServiceError(
+			http.StatusBadRequest,
+			"Complete your profile first",
 			err,
 		)
 	}
 
 	// Generate new plan
 	if s.Client == nil {
-		return "", NewServiceError(
-			http.StatusServiceUnavailable, 
-			"AI service unavailable", 
+		return nil, NewServiceError(
+			http.StatusServiceUnavailable,
+			"AI service unavailable",
 			nil,
 		)
 	}
 
-	prompt := s.formatWorkoutPrompt(profile)
+	// Prepare system message with JSON schema
+	systemMsg := openai.ChatCompletionMessage{
+		Role: openai.ChatMessageRoleSystem,
+		Content: `You are a fitness expert generating workout plans in JSON format. 
+			Respond ONLY with valid JSON matching this structure:
+			{
+			"title": "string",
+			"workouts": [
+				{
+				"name": "string",
+				"description": "string",
+				"status": "planned",
+				"exercises": [
+					{
+					"name": "string",
+					"muscle_group": "string",
+					"sets": 3,
+					"reps": 12,
+					"rest_sec": 60,
+					"notes": "string",
+					"technique": "string"
+					}
+				]
+				}
+			]
+			}`,
+	}
+
+	// Prepare user prompt with profile data
+	userPrompt := s.formatWorkoutPrompt(profile)
+	// Call AI with structured response requirement
 	resp, err := s.Client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		Model: openai.GPT3Dot5Turbo,
 		Messages: []openai.ChatCompletionMessage{
-			{Role: openai.ChatMessageRoleUser, Content: prompt},
+			systemMsg,
+			{Role: openai.ChatMessageRoleUser, Content: userPrompt},
+		},
+		ResponseFormat: &openai.ChatCompletionResponseFormat{
+			Type: openai.ChatCompletionResponseFormatTypeJSONObject,
 		},
 	})
 
 	if err != nil {
-		return "", NewServiceError(
-			http.StatusInternalServerError, 
-			"AI request failed", 
+		return nil, NewServiceError(
+			http.StatusInternalServerError,
+			"AI request failed",
 			err,
 		)
 	}
 
 	if len(resp.Choices) == 0 {
-		return "", NewServiceError(
-			http.StatusInternalServerError, 
-			"No response from AI", 
+		return nil, NewServiceError(
+			http.StatusInternalServerError,
+			"No response from AI",
 			nil,
 		)
 	}
 
 	content := resp.Choices[0].Message.Content
 
+	var generatedData struct {
+		Title    string           `json:"title"`
+		Workouts []models.Workout `json:"workouts"`
+	}
+
+	if err := json.Unmarshal([]byte(content), &generatedData); err != nil {
+		return nil, NewServiceError(
+			http.StatusInternalServerError,
+			"Failed to parse AI response",
+			fmt.Errorf("JSON parse error: %v, content: %s", err, content),
+		)
+	}
+
+	// Create full workout plan
+	now := time.Now()
+	workoutPlan := &models.WorkoutPlan{
+		UserID:    userID,
+		Title:     generatedData.Title,
+		Workouts:  generatedData.Workouts,
+		Status:    true,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	// Add IDs to nested objects
+	for i := range workoutPlan.Workouts {
+		workoutPlan.Workouts[i].WorkoutID = primitive.NewObjectID()
+
+		for j := range workoutPlan.Workouts[i].Exercises {
+			workoutPlan.Workouts[i].Exercises[j].ExerciseID = primitive.NewObjectID()
+		}
+	}
+
 	// Save the generated plan
-	if err := s.Repo.SaveWorkoutPlan(ctx, userID, &models.WorkoutPlan{
-		Content: content,
-	}); err != nil {
+	if err := s.MongoDBRepo.SaveWorkoutPlan(ctx, workoutPlan); err != nil {
 		// Log error but don't fail the request
 		fmt.Printf("Failed to save workout plan: %v\n", err)
 	}
 
-	return content, nil
+	return workoutPlan, nil
 }
 
 func (s *AIService) Chat(ctx context.Context, message string) (string, error) {
@@ -103,18 +182,18 @@ func (s *AIService) Chat(ctx context.Context, message string) (string, error) {
 
 	if s.Client == nil {
 		return "", NewServiceError(
-			http.StatusServiceUnavailable, 
-			"AI service unavailable", 
+			http.StatusServiceUnavailable,
+			"AI service unavailable",
 			nil,
 		)
 	}
 
 	// Get chat history
-	history, err := s.Repo.GetChatHistory(ctx, userID, 10)
+	history, err := s.MongoDBRepo.GetChatHistory(ctx, userID)
 	if err != nil {
 		return "", NewServiceError(
-			http.StatusInternalServerError, 
-			"Failed to get chat history", 
+			http.StatusInternalServerError,
+			"Failed to get chat history",
 			err,
 		)
 	}
@@ -129,7 +208,13 @@ func (s *AIService) Chat(ctx context.Context, message string) (string, error) {
 	}
 
 	// Add history to context
-	for _, msg := range history {
+	start := 0
+	if len(history) > 10 {
+		start = len(history) - 10
+	}
+
+	for i := start; i < len(history); i++ {
+		msg := history[i]
 		messages = append(messages, openai.ChatCompletionMessage{
 			Role:    openai.ChatMessageRoleUser,
 			Content: msg.Message,
@@ -153,16 +238,16 @@ func (s *AIService) Chat(ctx context.Context, message string) (string, error) {
 	})
 	if err != nil {
 		return "", NewServiceError(
-			http.StatusInternalServerError, 
-			"AI request failed", 
+			http.StatusInternalServerError,
+			"AI request failed",
 			err,
 		)
 	}
 
 	if len(resp.Choices) == 0 {
 		return "", NewServiceError(
-			http.StatusInternalServerError, 
-			"No response from AI", 
+			http.StatusInternalServerError,
+			"No response from AI",
 			nil,
 		)
 	}
@@ -170,14 +255,19 @@ func (s *AIService) Chat(ctx context.Context, message string) (string, error) {
 	response := resp.Choices[0].Message.Content
 
 	// Save chat message
-	if err := s.Repo.SaveChatMessage(ctx, &models.ChatMessage{
+	chatMsg := &models.ChatMessage{
 		UserID:   userID,
 		Message:  message,
 		Response: response,
 		IsUser:   true,
-	}); err != nil {
-		// Log error but don't fail the request
-		fmt.Printf("Failed to save chat message: %v\n", err)
+	}
+
+	if err := s.MongoDBRepo.SaveChatMessage(ctx, chatMsg); err != nil {
+		return "", NewServiceError(
+			http.StatusInternalServerError,
+			"Failed to save chat message",
+			err,
+		)
 	}
 
 	return response, nil
@@ -217,15 +307,187 @@ func (s *AIService) GetChatHistory(ctx context.Context) ([]models.ChatMessage, e
 		return nil, err
 	}
 
-	// Get last 20 messages
-	messages, err := s.Repo.GetChatHistory(ctx, userID, 20)
+	return s.MongoDBRepo.GetChatHistory(ctx, userID)
+}
+
+func (s *AIService) RegenerateWorkoutPlan(ctx context.Context, userComments string) (*models.WorkoutPlan, error) {
+	userID, err := s.GetUserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if s.Client == nil {
+		return nil, NewServiceError(
+			http.StatusServiceUnavailable,
+			"AI service unavailable",
+			nil,
+		)
+	}
+
+	// Получаем текущий план
+	currentPlan, err := s.MongoDBRepo.GetWorkoutPlan(ctx, userID)
 	if err != nil {
 		return nil, NewServiceError(
-			http.StatusInternalServerError, 
-			"Failed to get chat history", 
+			http.StatusNotFound,
+			"No existing workout plan found",
 			err,
 		)
 	}
 
-	return messages, nil
+	// Получаем профиль пользователя
+	profile, err := s.Repo.GetFitnessProfile(ctx, userID)
+	if err != nil {
+		return nil, NewServiceError(
+			http.StatusBadRequest,
+			"Complete your profile first",
+			err,
+		)
+	}
+
+	// Подготавливаем системное сообщение
+	systemMsg := openai.ChatCompletionMessage{
+		Role: openai.ChatMessageRoleSystem,
+		Content: `You are a fitness expert updating workout plans based on user feedback. 
+			Respond ONLY with valid JSON matching this structure:
+			{
+			"title": "string",
+			"workouts": [
+				{
+				"name": "string",
+				"description": "string",
+				"status": "planned",
+				"exercises": [
+					{
+					"name": "string",
+					"muscle_group": "string",
+					"sets": 3,
+					"reps": 12,
+					"rest_sec": 60,
+					"notes": "string",
+					"technique": "string"
+					}
+				]
+				}
+			]
+			}`,
+	}
+
+	// Подготавливаем промпт с текущим планом и комментариями
+	userPrompt := s.formatRegeneratePrompt(profile, currentPlan, userComments)
+
+	// Вызываем ИИ
+	resp, err := s.Client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+		Model: openai.GPT3Dot5Turbo,
+		Messages: []openai.ChatCompletionMessage{
+			systemMsg,
+			{Role: openai.ChatMessageRoleUser, Content: userPrompt},
+		},
+		ResponseFormat: &openai.ChatCompletionResponseFormat{
+			Type: openai.ChatCompletionResponseFormatTypeJSONObject,
+		},
+	})
+
+	if err != nil {
+		return nil, NewServiceError(
+			http.StatusInternalServerError,
+			"AI request failed",
+			err,
+		)
+	}
+
+	if len(resp.Choices) == 0 {
+		return nil, NewServiceError(
+			http.StatusInternalServerError,
+			"No response from AI",
+			nil,
+		)
+	}
+
+	content := resp.Choices[0].Message.Content
+
+	var generatedData struct {
+		Title    string           `json:"title"`
+		Workouts []models.Workout `json:"workouts"`
+	}
+
+	if err := json.Unmarshal([]byte(content), &generatedData); err != nil {
+		return nil, NewServiceError(
+			http.StatusInternalServerError,
+			"Failed to parse AI response",
+			fmt.Errorf("JSON parse error: %v, content: %s", err, content),
+		)
+	}
+
+	// Создаем обновленный план
+	now := time.Now()
+	updatedPlan := &models.WorkoutPlan{
+		ID:        currentPlan.ID, // Сохраняем ID существующего плана
+		UserID:    userID,
+		Title:     generatedData.Title,
+		Workouts:  generatedData.Workouts,
+		Status:    true,
+		CreatedAt: currentPlan.CreatedAt, // Сохраняем дату создания
+		UpdatedAt: now,
+	}
+
+	// Добавляем ID к вложенным объектам
+	for i := range updatedPlan.Workouts {
+		updatedPlan.Workouts[i].WorkoutID = primitive.NewObjectID()
+
+		for j := range updatedPlan.Workouts[i].Exercises {
+			updatedPlan.Workouts[i].Exercises[j].ExerciseID = primitive.NewObjectID()
+		}
+	}
+
+	// Сохраняем обновленный план
+	if err := s.MongoDBRepo.SaveWorkoutPlan(ctx, updatedPlan); err != nil {
+		return nil, NewServiceError(
+			http.StatusInternalServerError,
+			"Failed to save updated workout plan",
+			err,
+		)
+	}
+
+	return updatedPlan, nil
+}
+
+func (s *AIService) formatRegeneratePrompt(profile *models.FitnessProfile, currentPlan *models.WorkoutPlan, userComments string) string {
+	var sb strings.Builder
+
+	sb.WriteString("Update the existing workout plan based on user feedback.\n\n")
+	sb.WriteString("User Profile:\n")
+	fmt.Fprintf(&sb, "- Age: %d\n", profile.Age)
+	fmt.Fprintf(&sb, "- Height: %.1f cm\n", profile.Height)
+	fmt.Fprintf(&sb, "- Weight: %.1f kg\n", profile.Weight)
+	fmt.Fprintf(&sb, "- Fitness Goal: %s\n", profile.Goal)
+	fmt.Fprintf(&sb, "- Fitness Level: %s\n", profile.FitnessLevel)
+	fmt.Fprintf(&sb, "- Available Time: %d minutes per week\n", profile.AvailableMinutes)
+
+	if len(profile.HealthIssues) > 0 {
+		sb.WriteString("- Health Issues: ")
+		sb.WriteString(strings.Join(profile.HealthIssues, ", "))
+		sb.WriteString("\n")
+	}
+
+	sb.WriteString("\nCurrent Workout Plan:\n")
+	fmt.Fprintf(&sb, "Title: %s\n", currentPlan.Title)
+	for i, workout := range currentPlan.Workouts {
+		fmt.Fprintf(&sb, "Workout %d: %s - %s\n", i+1, workout.Name, workout.Description)
+		for j, exercise := range workout.Exercises {
+			fmt.Fprintf(&sb, "  Exercise %d: %s (%s) - %d sets x %d reps, %d sec rest\n",
+				j+1, exercise.Name, exercise.MuscleGroup, exercise.Sets, exercise.Reps, exercise.RestSec)
+		}
+	}
+
+	sb.WriteString("\nUser Comments/Feedback:\n")
+	sb.WriteString(userComments)
+
+	sb.WriteString("\n\nPlease update the workout plan based on the user's feedback while maintaining:")
+	sb.WriteString("\n1. Appropriate difficulty for their fitness level")
+	sb.WriteString("\n2. Alignment with their fitness goals")
+	sb.WriteString("\n3. Consideration of their health issues")
+	sb.WriteString("\n4. Time constraints")
+	sb.WriteString("\n5. Progressive overload principles")
+
+	return sb.String()
 }
