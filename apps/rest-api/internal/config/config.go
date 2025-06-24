@@ -31,7 +31,7 @@ func Load() (*Config, error) {
 		JWTSecret:     getEnv("JWT_SECRET", "default-secret-change-me"),
 		JWTExpiration: parseDuration(getEnv("JWT_EXPIRATION", "24h")),
 		OpenAIKey:     getEnv("OPENAI_KEY", ""),
-		MongoURI:      getEnv("MONGOURI", "mongodb://user:password@localhost:27017"),
+		MongoURI:      getEnv("MONGOURI", "mongodb://localhost:27017/fitness_ai"),
 		MongoDBName:   getEnv("MONGODBNAME", "fitness_ai"),
 	}
 

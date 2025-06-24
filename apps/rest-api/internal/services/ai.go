@@ -451,6 +451,49 @@ func (s *AIService) RegenerateWorkoutPlan(ctx context.Context, userComments stri
 	return updatedPlan, nil
 }
 
+func (s *AIService) GetWorkoutByID(ctx context.Context, workoutID string) (*models.Workout, error) {
+	userID, err := s.GetUserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	workout, err := s.MongoDBRepo.GetWorkoutByID(ctx, userID, workoutID)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, NewServiceError(
+				http.StatusNotFound,
+				"Workout not found",
+				err,
+			)
+		}
+		return nil, NewServiceError(
+			http.StatusInternalServerError,
+			"Failed to get workout",
+			err,
+		)
+	}
+
+	return workout, nil
+}
+
+func (s *AIService) CompleteWorkout(ctx context.Context, workoutID string) error {
+	userID, err := s.GetUserIDFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	return s.MongoDBRepo.CompleteWorkout(ctx, userID, workoutID)
+}
+
+func (s *AIService) GetUserProgress(ctx context.Context) (*models.UserProgress, error) {
+	userID, err := s.GetUserIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.MongoDBRepo.GetUserProgress(ctx, userID)
+}
+
 func (s *AIService) formatRegeneratePrompt(profile *models.FitnessProfile, currentPlan *models.WorkoutPlan, userComments string) string {
 	var sb strings.Builder
 
