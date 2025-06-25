@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app_dependencies.dart';
 import 'app/app_router.dart';
+import 'constants/app_colors.dart';
 
 final _appRouter = AppRouter();
 
@@ -27,7 +28,26 @@ class MyApp extends StatelessWidget {
       child: MaterialApp.router(
         routerDelegate: appRouter.delegate(),
         routeInformationParser: appRouter.defaultRouteParser(),
-        theme: ThemeData.dark(useMaterial3: true),
+        theme: ThemeData(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          scaffoldBackgroundColor: AppColors.black,
+          appBarTheme: AppBarTheme(
+            backgroundColor: AppColors.black,
+            iconTheme: IconThemeData(
+              color: AppColors.white
+            ),
+          ),
+          bottomNavigationBarTheme: BottomNavigationBarThemeData(
+            backgroundColor: AppColors.black,
+            selectedIconTheme: IconThemeData(
+              color: AppColors.lily
+            ),
+              unselectedIconTheme: IconThemeData(
+                  color: AppColors.white
+              ),
+          )
+        ),
       ),
     );
   }

@@ -11,5 +11,6 @@ class AppColors {
   static Color lily = Color(0xFF676FFF);
 
   static Color grey = Color(0xFFD9D9D9);
+  static Color messageGrey = Color(0xFF303030);
 
 }

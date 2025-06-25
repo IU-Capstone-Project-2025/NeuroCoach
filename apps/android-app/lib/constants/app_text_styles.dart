@@ -21,4 +21,13 @@ class AppTextStyles {
     );
   }
 
+  static TextStyle get chatTitle {
+    return GoogleFonts.anta(
+      color: Color(0xFFFFFFFF),
+      fontWeight: FontWeight.w400,
+      fontSize: 14,
+      height: 36 / 14
+    );
+  }
+
 }

@@ -34,6 +34,7 @@ class AppTextField extends StatelessWidget {
         ),
         hintStyle: AppTextStyles.textField
       ),
+      style: AppTextStyles.textButton,
     );
   }
 }

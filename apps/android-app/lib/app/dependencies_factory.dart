@@ -1,4 +1,5 @@
 import 'package:android_app/app/app_dependencies.dart';
+import 'package:android_app/features/chat/data/repositories/chat_messages_network_repository.dart';
 import 'package:android_app/features/init/data/repositories/health_network_repository.dart';
 import 'package:android_app/features/init/data/repositories/init_local_repository.dart';
 import 'package:android_app/features/login/data/repositories/login_network_repository.dart';
@@ -12,6 +13,7 @@ class DependenciesFactory {
       rememberMeRepository: RememberMeLocalRepository(preferences: prefs),
       initRepository: InitLocalRepository(preferences: prefs),
       healthRepository: HealthNetworkRepository(),
+      chatMessagesRepository: ChatMessagesNetworkRepository(),
     );
   }
 }
