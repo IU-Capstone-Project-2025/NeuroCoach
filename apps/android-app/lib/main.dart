@@ -58,6 +58,7 @@ Future<void> main() async {
   if (kDebugMode) print(Directory.current.path);
   // await dotenv.load(fileName: '/home/blazz1t/Projects/NeuroCoach/apps/android-app/.env');
   SharedPreferences prefs = await SharedPreferences.getInstance();
+  if (kDebugMode) print(prefs.getString('jwt'));
   final depScope = DependenciesFactory.build(prefs);
   runApp(MyApp(dependencies: depScope));
 }

@@ -16,4 +16,10 @@ class InitLocalRepository extends InitRepository {
     return token ?? '';
   }
 
+  @override
+  Future<bool> removeJWTToken() async {
+    if (kDebugMode) print('Deleting JWT from shared prefs');
+    return await _preferences.remove('jwt');
+  }
+
 }

@@ -4,16 +4,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class InitBloc extends Bloc<InitEvent, InitState> {
-
-  InitBloc(
-      {required InitRepository initRepository, required HealthRepository healthRepository})
-      : _initRepository = initRepository,
-        _healthRepository = healthRepository,
-        super(const InitStateInitial()) {
+  InitBloc({
+    required InitRepository initRepository,
+    required HealthRepository healthRepository,
+  }) : _initRepository = initRepository,
+       _healthRepository = healthRepository,
+       super(const InitStateInitial()) {
     on<InitEvent>(
-        (event, emit) => switch (event) {
-          InitEventCheck() => _onCheck(event, emit),
-        }
+      (event, emit) => switch (event) {
+        InitEventCheck() => _onCheck(event, emit),
+      },
     );
   }
 
@@ -27,7 +27,14 @@ class InitBloc extends Bloc<InitEvent, InitState> {
       emit(const InitStateUnauthenticated());
       return;
     }
-    await _healthRepository.checkToken(token) ? emit(const InitStateAuthenticated()) : emit(const InitStateUnauthenticated());
+
+    if (await _healthRepository.checkToken(token)) {
+      emit(const InitStateAuthenticated());
+      return;
+    } else {
+      _initRepository.removeJWTToken();
+      emit(const InitStateUnauthenticated());
+    }
   }
 }
 

@@ -61,7 +61,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         event.availableMinutes,
         event.rememberMe,
       );
-      emit(LoginStateLoaded());
 
       if (event.rememberMe && token.isNotEmpty) {
         _rememberMeRepository.rememberUser(jwtToken: token);

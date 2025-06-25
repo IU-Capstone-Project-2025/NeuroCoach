@@ -39,13 +39,14 @@ class AuthPage extends StatelessWidget {
               if (state is LoginStateLoaded) {
                 context.router.replace(HomeRoute());
               } else if (state is LoginStateError) {
-                if (kDebugMode) {
+                if (!kDebugMode) {
                   context.router.push(HomeRoute());
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Error logging in')),
                   );
                   context.read<LoginBloc>().add(LoginEventReset());
+                  context.read<SignUpBloc>().add(SignUpEventReset());
                 }
               } else if (state is LoginStateInitial) {
                 context.router.replace(AuthRoute(isSignUp: false));

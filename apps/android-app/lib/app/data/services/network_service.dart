@@ -45,7 +45,7 @@ class DioClient {
   DioClient._internal()
     : _dio = Dio(
         BaseOptions(
-          baseUrl: 'http://fuckyou.com',
+          baseUrl: 'http://10.0.2.2:8080',
           connectTimeout: const Duration(seconds: 10),
           receiveTimeout: const Duration(seconds: 10),
           contentType: 'application/json',
@@ -87,6 +87,7 @@ class DioClient {
   Dio get dio => _dio;
 
   void setToken(String token) {
+    if (kDebugMode) print('Added token $token');
     _token = token;
   }
 

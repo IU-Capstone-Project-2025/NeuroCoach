@@ -19,6 +19,8 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
         ),
 
         SignUpEventFinish() => _onFinish(event, emit),
+
+        SignUpEventReset() => emit(SignUpStateInitial()), //Reset if error
       },
     );
   }
@@ -99,6 +101,10 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
 
 sealed class SignUpEvent {
   const SignUpEvent();
+}
+
+class SignUpEventReset extends SignUpEvent {
+  const SignUpEventReset();
 }
 
 class SignUpEventStartSignup extends SignUpEvent {
