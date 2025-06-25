@@ -86,3 +86,16 @@ full-start: db-up migrate-up run-api ## Full start: DB, migrations, and API
 
 .PHONY: restart-db
 restart-db: db-down db-up ## Restart database
+
+.PHONY: mongo-up
+mongo-up: ## Start MongoDB using Docker
+	docker run -d --name neurocoach-mongo -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=user -e MONGO_INITDB_ROOT_PASSWORD=password -e MONGO_INITDB_DATABASE=fitness_ai mongo:6.0
+
+.PHONY: mongo-down
+mongo-down: ## Stop and remove MongoDB container
+	docker stop neurocoach-mongo || true
+	docker rm neurocoach-mongo || true
+
+.PHONY: mongo-shell
+mongo-shell: ## Open a shell to the running MongoDB container
+	docker exec -it neurocoach-mongo mongosh -u user -p password --authenticationDatabase admin fitness_ai

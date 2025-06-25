@@ -14,9 +14,10 @@ type Config struct {
 	DatabaseURL   string
 	JWTSecret     string
 	JWTExpiration time.Duration
-	OpenAIKey     string
+	OpenRouterKey string
 	MongoURI      string
 	MongoDBName   string
+	SkipDatabase  bool
 }
 
 func Load() (*Config, error) {
@@ -30,18 +31,23 @@ func Load() (*Config, error) {
 		DatabaseURL:   getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/fitness_ai?sslmode=disable"),
 		JWTSecret:     getEnv("JWT_SECRET", "default-secret-change-me"),
 		JWTExpiration: parseDuration(getEnv("JWT_EXPIRATION", "24h")),
-		OpenAIKey:     getEnv("OPENAI_KEY", ""),
-		MongoURI:      getEnv("MONGOURI", "mongodb://user:password@localhost:27017"),
+		OpenRouterKey: getEnv("OPENROUTER_KEY", "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"),
+		MongoURI:      getEnv("MONGOURI", "mongodb://localhost:27017/fitness_ai"),
 		MongoDBName:   getEnv("MONGODBNAME", "fitness_ai"),
+		SkipDatabase:  getEnv("SKIP_DATABASE", "") != "",
 	}
 
 	// Validate required fields
-	if cfg.DatabaseURL == "" {
+	if !cfg.SkipDatabase && cfg.DatabaseURL == "" {
 		log.Fatal("DATABASE_URL is required")
 	}
 
-	if cfg.OpenAIKey == "" {
-		log.Println("WARNING: OPENAI_KEY is not set - AI features will be disabled")
+	if cfg.OpenRouterKey == "" {
+		log.Println("WARNING: OPENROUTER_KEY is not set - AI features will be disabled")
+	}
+
+	if cfg.SkipDatabase {
+		log.Println("INFO: Running in database-free mode for AI testing")
 	}
 
 	return cfg, nil

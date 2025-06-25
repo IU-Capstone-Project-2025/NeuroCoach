@@ -47,7 +47,7 @@ func main() {
 	// Initialize services
 	authService := services.NewAuthService(postgresRepo, cfg.JWTSecret, cfg.JWTExpiration)
 	profileService := services.NewProfileService(postgresRepo)
-	aiService := services.NewAIService(postgresRepo, mongoRepo, cfg.OpenAIKey)
+	aiService := services.NewAIService(postgresRepo, mongoRepo, cfg.OpenRouterKey)
 	healthService := services.NewHealthService(postgresRepo)
 
 	// Initialize handlers
@@ -75,6 +75,8 @@ func main() {
 		authRouter.HandleFunc("/generate-plan", h.GeneratePlan).Methods("POST")
 		authRouter.HandleFunc("/workout-plan", h.GetWorkoutPlan).Methods("GET")
 		authRouter.HandleFunc("/regenerate-plan", h.RegenerateWorkoutPlan).Methods("POST")
+		authRouter.HandleFunc("/complete-workout", h.CompleteWorkout).Methods("POST")
+		authRouter.HandleFunc("/progress", h.GetUserProgress).Methods("GET")
 	}
 
 	// Start server
