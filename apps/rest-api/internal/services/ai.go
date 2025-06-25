@@ -12,21 +12,22 @@ import (
 	"rest-api/internal/models"
 	"rest-api/internal/repository"
 
-	"github.com/sashabaranov/go-openai"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type AIService struct {
 	BaseService
-	Client *openai.Client
+	Client *OpenRouterClient
 }
 
-func NewAIService(repo repository.Repository, mongoRepo repository.MongoDBRep, apiKey string) *AIService {
-	var client *openai.Client
-	if apiKey != "" {
-		client = openai.NewClient(apiKey)
+func NewAIService(repo repository.Repository, mongoRepo repository.MongoDBRep, openrouterKey string) *AIService {
+	var client *OpenRouterClient
+
+	if openrouterKey != "" {
+		client = NewOpenRouterClient(openrouterKey)
 	}
+
 	return &AIService{
 		BaseService: BaseService{Repo: repo, MongoDBRepo: mongoRepo},
 		Client:      client,
@@ -73,47 +74,42 @@ func (s *AIService) GenerateWorkoutPlan(ctx context.Context) (*models.WorkoutPla
 	}
 
 	// Prepare system message with JSON schema
-	systemMsg := openai.ChatCompletionMessage{
-		Role: openai.ChatMessageRoleSystem,
-		Content: `You are a fitness expert generating workout plans in JSON format. 
-			Respond ONLY with valid JSON matching this structure:
-			{
-			"title": "string",
-			"workouts": [
-				{
-				"name": "string",
-				"description": "string",
-				"status": "planned",
-				"exercises": [
-					{
-					"name": "string",
-					"muscle_group": "string",
-					"sets": 3,
-					"reps": 12,
-					"rest_sec": 60,
-					"notes": "string",
-					"technique": "string"
-					}
-				]
-				}
-			]
-			}`,
-	}
+	systemContent := `You are a fitness expert. Generate a workout plan and respond with ONLY valid JSON. No explanations, no markdown, no code blocks - just pure JSON.
+
+JSON structure:
+{
+  "title": "Workout Plan Title",
+  "workouts": [
+    {
+      "name": "Workout Name",
+      "description": "Brief description",
+      "status": "planned",
+      "exercises": [
+        {
+          "name": "Exercise Name",
+          "muscle_group": "Target Muscle",
+          "sets": 3,
+          "reps": 12,
+          "rest_sec": 60,
+          "notes": "Form tips",
+          "technique": "How to perform"
+        }
+      ]
+    }
+  ]
+}`
 
 	// Prepare user prompt with profile data
 	userPrompt := s.formatWorkoutPrompt(profile)
-	// Call AI with structured response requirement
-	resp, err := s.Client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model: openai.GPT3Dot5Turbo,
-		Messages: []openai.ChatCompletionMessage{
-			systemMsg,
-			{Role: openai.ChatMessageRoleUser, Content: userPrompt},
-		},
-		ResponseFormat: &openai.ChatCompletionResponseFormat{
-			Type: openai.ChatCompletionResponseFormatTypeJSONObject,
-		},
-	})
 
+	// Prepare messages for OpenRouter
+	messages := []OpenRouterMessage{
+		{Role: "system", Content: systemContent},
+		{Role: "user", Content: userPrompt},
+	}
+
+	// Call AI with structured response requirement
+	content, err := s.Client.CreateChatCompletion(ctx, messages, true)
 	if err != nil {
 		return nil, NewServiceError(
 			http.StatusInternalServerError,
@@ -122,27 +118,45 @@ func (s *AIService) GenerateWorkoutPlan(ctx context.Context) (*models.WorkoutPla
 		)
 	}
 
-	if len(resp.Choices) == 0 {
-		return nil, NewServiceError(
-			http.StatusInternalServerError,
-			"No response from AI",
-			nil,
-		)
-	}
+	// Log raw response for debugging
+	fmt.Printf("Raw AI response: %s\n", content)
 
-	content := resp.Choices[0].Message.Content
+	// Clean response - remove markdown code blocks if present
+	cleanContent := strings.TrimSpace(content)
+	if strings.HasPrefix(cleanContent, "```json") {
+		cleanContent = strings.TrimPrefix(cleanContent, "```json")
+		cleanContent = strings.TrimSuffix(cleanContent, "```")
+		cleanContent = strings.TrimSpace(cleanContent)
+	}
+	if strings.HasPrefix(cleanContent, "```") {
+		cleanContent = strings.TrimPrefix(cleanContent, "```")
+		cleanContent = strings.TrimSuffix(cleanContent, "```")
+		cleanContent = strings.TrimSpace(cleanContent)
+	}
 
 	var generatedData struct {
 		Title    string           `json:"title"`
 		Workouts []models.Workout `json:"workouts"`
 	}
 
-	if err := json.Unmarshal([]byte(content), &generatedData); err != nil {
+	if err := json.Unmarshal([]byte(cleanContent), &generatedData); err != nil {
 		return nil, NewServiceError(
 			http.StatusInternalServerError,
 			"Failed to parse AI response",
-			fmt.Errorf("JSON parse error: %v, content: %s", err, content),
+			fmt.Errorf("JSON parse error: %v, cleaned content: %s", err, cleanContent),
 		)
+	}
+
+	// Заполняем отсутствующие поля значениями по умолчанию
+	for i := range generatedData.Workouts {
+		if generatedData.Workouts[i].Status == "" {
+			generatedData.Workouts[i].Status = "planned"
+		}
+		for j := range generatedData.Workouts[i].Exercises {
+			if generatedData.Workouts[i].Exercises[j].RestSec == 0 {
+				generatedData.Workouts[i].Exercises[j].RestSec = 60
+			}
+		}
 	}
 
 	// Create full workout plan
@@ -199,9 +213,9 @@ func (s *AIService) Chat(ctx context.Context, message string) (string, error) {
 	}
 
 	// Build conversation context
-	messages := []openai.ChatCompletionMessage{
+	messages := []OpenRouterMessage{
 		{
-			Role: openai.ChatMessageRoleSystem,
+			Role: "system",
 			Content: "You are a helpful fitness assistant. " +
 				"Provide concise and helpful responses about fitness, nutrition, and health.",
 		},
@@ -215,27 +229,24 @@ func (s *AIService) Chat(ctx context.Context, message string) (string, error) {
 
 	for i := start; i < len(history); i++ {
 		msg := history[i]
-		messages = append(messages, openai.ChatCompletionMessage{
-			Role:    openai.ChatMessageRoleUser,
+		messages = append(messages, OpenRouterMessage{
+			Role:    "user",
 			Content: msg.Message,
 		})
-		messages = append(messages, openai.ChatCompletionMessage{
-			Role:    openai.ChatMessageRoleAssistant,
+		messages = append(messages, OpenRouterMessage{
+			Role:    "assistant",
 			Content: msg.Response,
 		})
 	}
 
 	// Add current message
-	messages = append(messages, openai.ChatCompletionMessage{
-		Role:    openai.ChatMessageRoleUser,
+	messages = append(messages, OpenRouterMessage{
+		Role:    "user",
 		Content: message,
 	})
 
 	// Call AI
-	resp, err := s.Client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model:    openai.GPT3Dot5Turbo,
-		Messages: messages,
-	})
+	response, err := s.Client.CreateChatCompletion(ctx, messages, false)
 	if err != nil {
 		return "", NewServiceError(
 			http.StatusInternalServerError,
@@ -243,16 +254,6 @@ func (s *AIService) Chat(ctx context.Context, message string) (string, error) {
 			err,
 		)
 	}
-
-	if len(resp.Choices) == 0 {
-		return "", NewServiceError(
-			http.StatusInternalServerError,
-			"No response from AI",
-			nil,
-		)
-	}
-
-	response := resp.Choices[0].Message.Content
 
 	// Save chat message
 	chatMsg := &models.ChatMessage{
@@ -345,48 +346,42 @@ func (s *AIService) RegenerateWorkoutPlan(ctx context.Context, userComments stri
 	}
 
 	// Подготавливаем системное сообщение
-	systemMsg := openai.ChatCompletionMessage{
-		Role: openai.ChatMessageRoleSystem,
-		Content: `You are a fitness expert updating workout plans based on user feedback. 
-			Respond ONLY with valid JSON matching this structure:
-			{
-			"title": "string",
-			"workouts": [
-				{
-				"name": "string",
-				"description": "string",
-				"status": "planned",
-				"exercises": [
-					{
-					"name": "string",
-					"muscle_group": "string",
-					"sets": 3,
-					"reps": 12,
-					"rest_sec": 60,
-					"notes": "string",
-					"technique": "string"
-					}
-				]
-				}
-			]
-			}`,
-	}
+	systemContent := `You are a fitness expert updating workout plans. Respond with ONLY valid JSON. No explanations, no markdown, no code blocks - just pure JSON.
+
+JSON structure:
+{
+  "title": "Updated Plan Title",
+  "workouts": [
+    {
+      "name": "Workout Name",
+      "description": "Brief description",
+      "status": "planned",
+      "exercises": [
+        {
+          "name": "Exercise Name",
+          "muscle_group": "Target Muscle",
+          "sets": 3,
+          "reps": 12,
+          "rest_sec": 60,
+          "notes": "Form tips",
+          "technique": "How to perform"
+        }
+      ]
+    }
+  ]
+}`
 
 	// Подготавливаем промпт с текущим планом и комментариями
 	userPrompt := s.formatRegeneratePrompt(profile, currentPlan, userComments)
 
-	// Вызываем ИИ
-	resp, err := s.Client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
-		Model: openai.GPT3Dot5Turbo,
-		Messages: []openai.ChatCompletionMessage{
-			systemMsg,
-			{Role: openai.ChatMessageRoleUser, Content: userPrompt},
-		},
-		ResponseFormat: &openai.ChatCompletionResponseFormat{
-			Type: openai.ChatCompletionResponseFormatTypeJSONObject,
-		},
-	})
+	// Подготавливаем сообщения для OpenRouter
+	messages := []OpenRouterMessage{
+		{Role: "system", Content: systemContent},
+		{Role: "user", Content: userPrompt},
+	}
 
+	// Вызываем ИИ
+	content, err := s.Client.CreateChatCompletion(ctx, messages, true)
 	if err != nil {
 		return nil, NewServiceError(
 			http.StatusInternalServerError,
@@ -395,27 +390,45 @@ func (s *AIService) RegenerateWorkoutPlan(ctx context.Context, userComments stri
 		)
 	}
 
-	if len(resp.Choices) == 0 {
-		return nil, NewServiceError(
-			http.StatusInternalServerError,
-			"No response from AI",
-			nil,
-		)
-	}
+	// Log raw response for debugging
+	fmt.Printf("Raw AI response: %s\n", content)
 
-	content := resp.Choices[0].Message.Content
+	// Clean response - remove markdown code blocks if present
+	cleanContent := strings.TrimSpace(content)
+	if strings.HasPrefix(cleanContent, "```json") {
+		cleanContent = strings.TrimPrefix(cleanContent, "```json")
+		cleanContent = strings.TrimSuffix(cleanContent, "```")
+		cleanContent = strings.TrimSpace(cleanContent)
+	}
+	if strings.HasPrefix(cleanContent, "```") {
+		cleanContent = strings.TrimPrefix(cleanContent, "```")
+		cleanContent = strings.TrimSuffix(cleanContent, "```")
+		cleanContent = strings.TrimSpace(cleanContent)
+	}
 
 	var generatedData struct {
 		Title    string           `json:"title"`
 		Workouts []models.Workout `json:"workouts"`
 	}
 
-	if err := json.Unmarshal([]byte(content), &generatedData); err != nil {
+	if err := json.Unmarshal([]byte(cleanContent), &generatedData); err != nil {
 		return nil, NewServiceError(
 			http.StatusInternalServerError,
 			"Failed to parse AI response",
-			fmt.Errorf("JSON parse error: %v, content: %s", err, content),
+			fmt.Errorf("JSON parse error: %v, cleaned content: %s", err, cleanContent),
 		)
+	}
+
+	// Заполняем отсутствующие поля значениями по умолчанию
+	for i := range generatedData.Workouts {
+		if generatedData.Workouts[i].Status == "" {
+			generatedData.Workouts[i].Status = "planned"
+		}
+		for j := range generatedData.Workouts[i].Exercises {
+			if generatedData.Workouts[i].Exercises[j].RestSec == 0 {
+				generatedData.Workouts[i].Exercises[j].RestSec = 60
+			}
+		}
 	}
 
 	// Создаем обновленный план
