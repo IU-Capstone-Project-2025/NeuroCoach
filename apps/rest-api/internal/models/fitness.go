@@ -41,7 +41,7 @@ type WorkoutPlan struct {
 type Workout struct {
 	WorkoutID   primitive.ObjectID `bson:"workout_id,omitempty" json:"workout_id"`
 	Name        string             `bson:"name" json:"name"`
-	Description string             `bson:"description" json:"description"`
+	Description string             `bson:"description,omitempty" json:"description,omitempty"`
 	Status      string             `bson:"status" json:"status"`
 	Exercises   []Exercise         `bson:"exercises" json:"exercises"`
 }
@@ -52,7 +52,7 @@ type Exercise struct {
 	MuscleGroup string             `bson:"muscle_group" json:"muscle_group"`
 	Sets        int                `bson:"sets" json:"sets"`
 	Reps        int                `bson:"reps" json:"reps"`
-	RestSec     int                `bson:"rest_sec" json:"rest_sec"`
-	Notes       string             `bson:"notes" json:"notes"`
-	Technique   string             `bson:"technique" json:"technique"`
+	RestSec     int                `bson:"rest_sec,omitempty" json:"rest_sec,omitempty"`
+	Notes       string             `bson:"notes,omitempty" json:"notes,omitempty"`
+	Technique   string             `bson:"technique,omitempty" json:"technique,omitempty"`
 }

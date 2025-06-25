@@ -47,7 +47,7 @@ func main() {
 	// Initialize services
 	authService := services.NewAuthService(postgresRepo, cfg.JWTSecret, cfg.JWTExpiration)
 	profileService := services.NewProfileService(postgresRepo)
-	aiService := services.NewAIService(postgresRepo, mongoRepo, cfg.OpenAIKey)
+	aiService := services.NewAIService(postgresRepo, mongoRepo, cfg.OpenRouterKey)
 	healthService := services.NewHealthService(postgresRepo)
 
 	// Initialize handlers
