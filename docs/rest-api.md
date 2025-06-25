@@ -214,9 +214,102 @@ Authorization: Bearer <token>
 **Response** (200 OK)
 ```json
 {
-  "plan_id": 1,
-  "content": "Your personalized workout plan...",
+  "id": "workout_plan_id",
+  "user_id": 1,
+  "title": "Personalized Fitness Plan",
+  "workouts": [
+    {
+      "workout_id": "workout_id",
+      "name": "Upper Body Strength",
+      "description": "Focus on chest, back, and arms",
+      "status": "planned",
+      "exercises": [
+        {
+          "exercise_id": "exercise_id",
+          "name": "Push-ups",
+          "muscle_group": "chest",
+          "sets": 3,
+          "reps": 12,
+          "rest_sec": 60,
+          "notes": "Keep core tight",
+          "technique": "Slow and controlled movement"
+        }
+      ]
+    }
+  ],
+  "status": true,
   "created_at": "2024-03-20T10:00:00Z",
+  "updated_at": "2024-03-20T10:00:00Z"
+}
+```
+
+#### Regenerate Workout Plan
+Regenerate workout plan based on user feedback.
+
+```http
+POST /api/regenerate-plan
+Authorization: Bearer <token>
+```
+
+**Request Body**
+```json
+{
+  "comments": "Make it more challenging and add more cardio"
+}
+```
+
+**Response** (200 OK)
+```json
+{
+  "id": "workout_plan_id",
+  "title": "Updated Personalized Fitness Plan",
+  "workouts": [...],
+  "updated_at": "2024-03-20T11:00:00Z"
+}
+```
+
+### Progress Tracking
+
+#### Complete Workout
+Mark a workout as completed and update user progress.
+
+```http
+POST /api/complete-workout
+Authorization: Bearer <token>
+```
+
+**Request Body**
+```json
+{
+  "workout_id": "workout_object_id_here"
+}
+```
+
+**Response** (200 OK)
+```json
+{
+  "message": "Workout completed successfully"
+}
+```
+
+#### Get User Progress
+Retrieve user's workout progress and statistics.
+
+```http
+GET /api/progress
+Authorization: Bearer <token>
+```
+
+**Response** (200 OK)
+```json
+{
+  "id": "progress_id",
+  "user_id": 1,
+  "total_workouts": 15,
+  "consecutive_days": 5,
+  "level": "Intermediate",
+  "completed_workouts": ["Upper Body Strength", "Core Workout", "Leg Day"],
+  "last_workout_date": "2024-03-20T10:00:00Z",
   "updated_at": "2024-03-20T10:00:00Z"
 }
 ```
@@ -238,11 +331,61 @@ Authorization: Bearer <token>
 ### Chat Message
 | Field | Type | Description |
 |-------|------|-------------|
-| id | integer | Message ID |
+| id | string | Message ID |
 | message | string | Message content |
 | response | string | AI response |
 | is_user | boolean | Whether from user |
 | created_at | string | Timestamp |
+
+### Workout Plan
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Plan ID |
+| user_id | integer | User ID |
+| title | string | Plan title |
+| workouts | Workout[] | Array of workouts |
+| status | boolean | Plan active status |
+| created_at | string | Creation timestamp |
+| updated_at | string | Update timestamp |
+
+### Workout
+| Field | Type | Description |
+|-------|------|-------------|
+| workout_id | string | Workout ID |
+| name | string | Workout name |
+| description | string | Workout description |
+| status | string | Workout status |
+| exercises | Exercise[] | Array of exercises |
+
+### Exercise
+| Field | Type | Description |
+|-------|------|-------------|
+| exercise_id | string | Exercise ID |
+| name | string | Exercise name |
+| muscle_group | string | Target muscle group |
+| sets | integer | Number of sets |
+| reps | integer | Repetitions per set |
+| rest_sec | integer | Rest time in seconds |
+| notes | string | Additional notes |
+| technique | string | Technique instructions |
+
+### User Progress
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Progress ID |
+| user_id | integer | User ID |
+| total_workouts | integer | Total completed workouts |
+| consecutive_days | integer | Consecutive workout days |
+| level | string | User fitness level |
+| completed_workouts | string[] | Names of completed workouts |
+| last_workout_date | string | Last workout timestamp |
+| updated_at | string | Update timestamp |
+
+### Level System
+- **Beginner**: 0-4 completed workouts
+- **Intermediate**: 5-19 completed workouts
+- **Advanced**: 20-49 completed workouts
+- **Expert**: 50+ completed workouts
 
 ### Error Response
 ```json
