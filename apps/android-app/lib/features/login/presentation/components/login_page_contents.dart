@@ -1,7 +1,6 @@
 import 'package:android_app/app/app_router.dart';
 import 'package:android_app/constants/app_colors.dart';
 import 'package:android_app/constants/app_text_styles.dart';
-import 'package:android_app/features/login/presentation/sign_up_page.dart';
 import 'package:android_app/uikit/app_checkbox.dart';
 import 'package:android_app/uikit/app_text_field.dart';
 import 'package:android_app/uikit/buttons/app_button.dart';
@@ -80,15 +79,6 @@ class LoginPageContentsState extends State<LoginPageContents> {
                     Text('Remember me', style: AppTextStyles.textButton),
                   ],
                 ),
-                TextButton(
-                  onPressed: () => context.router.replace(SignUpRoute()),
-                  child: Text(
-                    'Sign up',
-                    style: AppTextStyles.textButton.copyWith(
-                      color: AppColors.lily,
-                    ),
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -112,10 +102,33 @@ class LoginPageContentsState extends State<LoginPageContents> {
                             );
                           },
                     padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
+                    isDisabled: isLoading,
                     text: 'Log in',
                   ),
                 );
               },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Don't have an account?",
+                  style: AppTextStyles.textButton.copyWith(
+                    fontWeight: FontWeight.w100,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () =>
+                      context.router.replace(AuthRoute(isSignUp: true)),
+                  child: Text(
+                    'Sign up',
+                    style: AppTextStyles.textButton.copyWith(
+                      color: AppColors.lily,
+                      fontWeight: FontWeight.w100,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

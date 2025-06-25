@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:android_app/app/dependencies_factory.dart';
 import 'package:android_app/app/presentation/scopes/dependencies_scope.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app_dependencies.dart';
@@ -31,6 +35,8 @@ class MyApp extends StatelessWidget {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (kDebugMode) print(Directory.current.path);
+  // await dotenv.load(fileName: '/home/blazz1t/Projects/NeuroCoach/apps/android-app/.env');
   SharedPreferences prefs = await SharedPreferences.getInstance();
   final depScope = DependenciesFactory.build(prefs);
   runApp(MyApp(dependencies: depScope));

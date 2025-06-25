@@ -15,6 +15,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       (event, emit) => switch (event) {
         LoginEventLogin() => _onLogin(event, emit),
         LoginEventSignUp() => _onSignUp(event, emit),
+        LoginEventReset() => emit(const LoginStateInitial()),
       },
     );
   }
@@ -25,16 +26,19 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   Future<void> _onLogin(LoginEventLogin event, Emitter<LoginState> emit) async {
     emit(const LoginStateLoading());
     try {
-      _loginRepository.login(); //TODO: Update when integrating backend
-      if (event.rememberMe) {
-        _rememberMeRepository.rememberUser(
-          jwtToken: '',
-        ); //TODO: Update when integrating backend
+      final String token = await _loginRepository.login(
+        event.email,
+        event.password,
+        event.rememberMe,
+      );
+
+      if (event.rememberMe && token.isNotEmpty) {
+        _rememberMeRepository.rememberUser(jwtToken: token);
       }
-      emit(LoginStateLoaded());
+      emit(const LoginStateLoaded());
     } on Object catch (e, s) {
       if (kDebugMode) print('$e, $s');
-      emit(LoginStateError());
+      emit(const LoginStateError());
     }
   }
 
@@ -44,8 +48,25 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   ) async {
     emit(const LoginStateLoading());
     try {
-      _loginRepository.signUp();
+      final String token = await _loginRepository.signUp(
+        event.email,
+        event.password,
+        event.height,
+        event.weight,
+        event.age,
+        event.goal,
+        event.healthIssues,
+        event.timeframe,
+        event.fitnessLevel,
+        event.availableMinutes,
+        event.rememberMe,
+      );
       emit(LoginStateLoaded());
+
+      if (event.rememberMe && token.isNotEmpty) {
+        _rememberMeRepository.rememberUser(jwtToken: token);
+      }
+      emit(const LoginStateLoaded());
     } on Object catch (e, s) {
       if (kDebugMode) print('$e, $s');
       emit(LoginStateError());
@@ -70,10 +91,35 @@ class LoginEventLogin extends LoginEvent {
 }
 
 class LoginEventSignUp extends LoginEvent {
-  const LoginEventSignUp(this.email, this.password);
+  const LoginEventSignUp({
+    required this.email,
+    required this.password,
+    required this.height,
+    required this.weight,
+    required this.age,
+    required this.goal,
+    required this.healthIssues,
+    required this.timeframe,
+    required this.fitnessLevel,
+    required this.availableMinutes,
+    required this.rememberMe,
+  });
 
   final String email;
   final String password;
+  final int height;
+  final int weight;
+  final int age;
+  final String goal;
+  final List<String> healthIssues;
+  final String timeframe;
+  final String fitnessLevel;
+  final int availableMinutes;
+  final bool rememberMe;
+}
+
+class LoginEventReset extends LoginEvent {
+  const LoginEventReset();
 }
 
 sealed class LoginState {
