@@ -1,3 +1,4 @@
+import 'package:android_app/features/path/domain/entities/WorkoutEntity.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
@@ -7,7 +8,7 @@ import '../../../../constants/app_text_styles.dart';
 @RoutePage()
 class WorkoutPage extends StatelessWidget {
   final String name;
-  final List<Map<String, dynamic>> exercises;
+  final List<Exercise> exercises;
 
   const WorkoutPage({super.key, required this.name, required this.exercises});
 
@@ -46,7 +47,7 @@ class WorkoutPage extends StatelessWidget {
                   ),
                   iconColor: AppColors.white,
                   collapsedIconColor: AppColors.white,
-                  title: Text(ex['name'], style: AppTextStyles.textButton),
+                  title: Text(ex.name, style: AppTextStyles.textButton),
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(12.0),
@@ -55,27 +56,27 @@ class WorkoutPage extends StatelessWidget {
                         children:
                             [
                                   Text(
-                                    "Muscle Group: ${ex['muscle_group']}",
+                                    "Muscle Group: ${ex.muscleGroup}",
                                     style: AppTextStyles.textButton,
                                   ),
                                   Text(
-                                    "Sets: ${ex['sets']}",
+                                    "Sets: ${ex.sets}",
                                     style: AppTextStyles.textButton,
                                   ),
                                   Text(
-                                    "Reps: ${ex['reps']}",
+                                    "Reps: ${ex.reps}",
                                     style: AppTextStyles.textButton,
                                   ),
                                   Text(
-                                    "Rest: ${ex['rest_sec']} sec",
+                                    "Rest: ${ex.restSec} sec",
                                     style: AppTextStyles.textButton,
                                   ),
                                   Text(
-                                    "Technique: ${ex['technique']}",
+                                    "Technique: ${ex.technique}",
                                     style: AppTextStyles.textButton,
                                   ),
                                   Text(
-                                    "Notes: ${ex['notes']}",
+                                    "Notes: ${ex.notes}",
                                     style: AppTextStyles.textButton,
                                   ),
                                 ]

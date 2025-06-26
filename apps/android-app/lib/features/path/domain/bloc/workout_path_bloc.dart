@@ -1,3 +1,4 @@
+import 'package:android_app/features/path/domain/entities/WorkoutEntity.dart';
 import 'package:android_app/features/path/domain/repositories/workout_path_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -76,7 +77,7 @@ class WorkoutStateLoading extends WorkoutState {
 class WorkoutStateLoaded extends WorkoutState {
   const WorkoutStateLoaded({required this.workout});
 
-  final List<Map<String, dynamic>> workout;
+  final List<WorkoutEntity> workout;
 }
 
 class WorkoutStateError extends WorkoutState {

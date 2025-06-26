@@ -229,7 +229,7 @@ class WorkoutRoute extends PageRouteInfo<WorkoutRouteArgs> {
   WorkoutRoute({
     Key? key,
     required String name,
-    required List<Map<String, dynamic>> exercises,
+    required List<Exercise> exercises,
     List<PageRouteInfo>? children,
   }) : super(
           WorkoutRoute.name,
@@ -258,7 +258,7 @@ class WorkoutRouteArgs {
 
   final String name;
 
-  final List<Map<String, dynamic>> exercises;
+  final List<Exercise> exercises;
 
   @override
   String toString() {

@@ -20,7 +20,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     Emitter<ChatState> emit,
   ) async {
     final userMessage = ChatMessage(
-      id: DateTime.now().millisecondsSinceEpoch,
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
       message: event.message,
       response: null,
       isUser: true,
@@ -31,7 +31,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     try {
       final response = await _chatMessagesRepository.sendMessage(event.message);
       final botMessage = ChatMessage(
-        id: DateTime.now().millisecondsSinceEpoch + 1,
+        id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
         message: event.message,
         response: response,
         isUser: false,
@@ -43,7 +43,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       if (kDebugMode) print('$e, $s');
       _messages.add(
         ChatMessage(
-          id: DateTime.now().millisecondsSinceEpoch + 1,
+          id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
           message: event.message,
           response: 'Something went wrong....',
           isUser: false,
@@ -55,20 +55,43 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   Future<void> _onChatRetrieve(
-    ChatEventRetrieve event,
-    Emitter<ChatState> emit,
-  ) async {
+      ChatEventRetrieve event,
+      Emitter<ChatState> emit,
+      ) async {
     emit(ChatStateLoading(messages: _messages));
     try {
-      final response = await _chatMessagesRepository.fetchMessages();
+      final rawMessages = await _chatMessagesRepository.fetchMessages();
+
       _messages.clear();
-      _messages.addAll(response);
+
+      for (final raw in rawMessages) {
+
+        _messages.add(ChatMessage(
+          id: raw.id,
+          message: raw.message,
+          response: raw.response,
+          isUser: true,
+          createdAt: raw.createdAt,
+        ));
+
+        if (raw.response != null && raw.response!.isNotEmpty) {
+          _messages.add(ChatMessage(
+            id: raw.id,
+            message: raw.response!,
+            response: raw.response!,
+            isUser: false,
+            createdAt: raw.createdAt,
+          ));
+        }
+      }
+
       emit(ChatStateLoaded(messages: _messages));
     } on Object catch (e, s) {
       if (kDebugMode) print('$e, $s');
       emit(ChatStateError(messages: _messages));
     }
   }
+
 
   final ChatMessagesRepository _chatMessagesRepository;
   final List<ChatMessage> _messages = [];

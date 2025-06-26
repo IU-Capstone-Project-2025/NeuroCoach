@@ -1,5 +1,5 @@
 class ChatMessage {
-  final int id;
+  final String id;
   final String message;
   final String? response;
   final bool isUser;

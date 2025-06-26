@@ -1,6 +1,7 @@
 import 'package:android_app/constants/app_colors.dart';
 import 'package:android_app/constants/app_text_styles.dart';
 import 'package:android_app/features/path/domain/bloc/workout_path_bloc.dart';
+import 'package:android_app/features/path/domain/entities/WorkoutEntity.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,7 +26,7 @@ class PathPage extends StatelessWidget {
       body: BlocBuilder<WorkoutBloc, WorkoutState>(
         builder: (BuildContext context, WorkoutState state) {
           if (state is WorkoutStateLoading) {
-            return CircularProgressIndicator();
+            return Center(child: CircularProgressIndicator());
           } else if (state is WorkoutStateError) {
             return Center(
               child: Column(
@@ -70,26 +71,29 @@ class PathPage extends StatelessWidget {
 }
 
 class WorkoutPath extends StatelessWidget {
-  final List<Map<String, dynamic>> workouts;
+  final List<WorkoutEntity> workouts;
 
   const WorkoutPath({super.key, required this.workouts});
 
   WorkoutStatus _getStatus(int index) {
     final current = workouts[index];
-    final status = current['status'] as String;
+    final status = current.status;
 
     if (status == 'complete') return WorkoutStatus.completed;
 
     final prevCompleted = workouts
         .sublist(0, index)
-        .where((w) => w['status'] == 'complete')
+        .where((w) => w.status == 'complete')
         .isNotEmpty;
 
     final hasPreviousPlanned = workouts
         .sublist(0, index)
-        .any((w) => w['status'] == 'planned');
+        .any((w) => w.status == 'planned');
 
-    if (!hasPreviousPlanned && prevCompleted) return WorkoutStatus.current;
+    if ((!hasPreviousPlanned && prevCompleted) ||
+        (index == 0 && workouts[index].status == 'planned')) {
+      return WorkoutStatus.current;
+    }
 
     return WorkoutStatus.planned;
   }
@@ -123,7 +127,9 @@ class WorkoutPath extends StatelessWidget {
       itemBuilder: (context, index) {
         final workout = workouts[index];
         final status = _getStatus(index);
-        final isTappable = status == WorkoutStatus.current || status == WorkoutStatus.completed;
+        final isTappable =
+            status == WorkoutStatus.current ||
+            status == WorkoutStatus.completed;
 
         Widget node = Container(
           width: 64,
@@ -134,7 +140,9 @@ class WorkoutPath extends StatelessWidget {
           ),
           child: Center(
             child: Icon(
-              status == WorkoutStatus.completed ? Icons.check : Icons.fitness_center,
+              status == WorkoutStatus.completed
+                  ? Icons.check
+                  : Icons.fitness_center,
               color: AppColors.black,
             ),
           ),
@@ -144,10 +152,7 @@ class WorkoutPath extends StatelessWidget {
           node = GestureDetector(
             onTap: () {
               context.pushRoute(
-                WorkoutRoute(
-                  name: workout['name'],
-                  exercises: List<Map<String, dynamic>>.from(workout['exercises']),
-                ),
+                WorkoutRoute(name: workout.name, exercises: workout.exercises),
               );
             },
             child: node,
@@ -162,12 +167,7 @@ class WorkoutPath extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: _getAlignment(index),
-                  children: [
-                    Padding(
-                      padding: _getPadding(index),
-                      child: node
-                    ),
-                  ],
+                  children: [Padding(padding: _getPadding(index), child: node)],
                 ),
               ),
             ],
@@ -177,4 +177,3 @@ class WorkoutPath extends StatelessWidget {
     );
   }
 }
-

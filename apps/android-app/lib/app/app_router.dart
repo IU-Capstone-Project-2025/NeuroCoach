@@ -10,6 +10,7 @@ import '../features/login/presentation/auth_page.dart';
 import '../features/settings/presentation/screens/profile_page.dart';
 import '../features/path/presentation/screens/workouts_page.dart';
 import '../features/path/presentation/screens/workout_page.dart';
+import '../features/path/domain/entities/WorkoutEntity.dart';
 
 
 part 'app_router.gr.dart';

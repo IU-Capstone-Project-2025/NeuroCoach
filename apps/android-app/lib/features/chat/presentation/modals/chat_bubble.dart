@@ -18,7 +18,7 @@ class ChatMessageBubble extends StatelessWidget {
       child: Row(
         mainAxisAlignment:
         isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end, // 🧠 align avatar to bottom
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser)
             Padding(
@@ -34,22 +34,17 @@ class ChatMessageBubble extends StatelessWidget {
               ),
             ),
           Flexible(
-            child: AnimatedSlide(
-              offset: const Offset(0, 0.1),
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 4.0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
-                  decoration: BoxDecoration(
-                    color: isUser ? AppColors.lily : AppColors.messageGrey,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    isUser ? message.message : message.response ?? '',
-                    style: AppTextStyles.textButton,
-                  ),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 4.0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+                decoration: BoxDecoration(
+                  color: isUser ? AppColors.lily : AppColors.messageGrey,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  isUser ? message.message : message.response ?? '',
+                  style: AppTextStyles.textButton,
                 ),
               ),
             ),
