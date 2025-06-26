@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'package:flutter/material.dart';
 
 class AppColors {
   static Color black = Color(0xFF1F1F1F);
@@ -9,5 +9,8 @@ class AppColors {
   static Color deepBlue = Color(0xFF001680);
   static Color purple = Color(0xFF5C63E3); //Use either, depends on what designer leaves
   static Color lily = Color(0xFF676FFF);
-  
+
+  static Color grey = Color(0xFFD9D9D9);
+  static Color messageGrey = Color(0xFF303030);
+
 }
