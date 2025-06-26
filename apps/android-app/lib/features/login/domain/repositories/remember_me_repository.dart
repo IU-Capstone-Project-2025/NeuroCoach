@@ -1,3 +1,3 @@
 abstract class RememberMeRepository {
-  Future<void> rememberUser({required String jwtToken});
+  Future<void> rememberUser({required String jwtToken, required String email});
 }

@@ -32,8 +32,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         event.rememberMe,
       );
 
-      if (event.rememberMe && token.isNotEmpty) {
-        _rememberMeRepository.rememberUser(jwtToken: token);
+      if (token.isNotEmpty) {
+        _rememberMeRepository.rememberUser(jwtToken: token, email: event.email);
       }
       emit(const LoginStateLoaded());
     } on Object catch (e, s) {
@@ -62,8 +62,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         event.rememberMe,
       );
 
-      if (event.rememberMe && token.isNotEmpty) {
-        _rememberMeRepository.rememberUser(jwtToken: token);
+      if (token.isNotEmpty) {
+        _rememberMeRepository.rememberUser(jwtToken: token, email: event.email);
       }
       emit(const LoginStateLoaded());
     } on Object catch (e, s) {

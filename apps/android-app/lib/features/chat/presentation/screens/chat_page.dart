@@ -30,7 +30,7 @@ class ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       ),
       body: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 32.0),
+        padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 32.0, bottom: 8.0),
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.grey.withAlpha(54),

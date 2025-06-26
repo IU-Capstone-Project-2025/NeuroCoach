@@ -50,10 +50,39 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const PathPage(),
       );
     },
+    ProfileRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const ProfilePage(),
+      );
+    },
+    SettingsMainRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const SettingsMainPage(),
+      );
+    },
     SettingsRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const SettingsPage(),
+      );
+    },
+    WorkoutRoute.name: (routeData) {
+      final args = routeData.argsAs<WorkoutRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: WorkoutPage(
+          key: args.key,
+          name: args.name,
+          exercises: args.exercises,
+        ),
+      );
+    },
+    WorkoutsRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const WorkoutsPage(),
       );
     },
   };
@@ -153,6 +182,34 @@ class PathRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ProfilePage]
+class ProfileRoute extends PageRouteInfo<void> {
+  const ProfileRoute({List<PageRouteInfo>? children})
+      : super(
+          ProfileRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'ProfileRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [SettingsMainPage]
+class SettingsMainRoute extends PageRouteInfo<void> {
+  const SettingsMainRoute({List<PageRouteInfo>? children})
+      : super(
+          SettingsMainRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'SettingsMainRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
 /// [SettingsPage]
 class SettingsRoute extends PageRouteInfo<void> {
   const SettingsRoute({List<PageRouteInfo>? children})
@@ -162,6 +219,63 @@ class SettingsRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'SettingsRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [WorkoutPage]
+class WorkoutRoute extends PageRouteInfo<WorkoutRouteArgs> {
+  WorkoutRoute({
+    Key? key,
+    required String name,
+    required List<Map<String, dynamic>> exercises,
+    List<PageRouteInfo>? children,
+  }) : super(
+          WorkoutRoute.name,
+          args: WorkoutRouteArgs(
+            key: key,
+            name: name,
+            exercises: exercises,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'WorkoutRoute';
+
+  static const PageInfo<WorkoutRouteArgs> page =
+      PageInfo<WorkoutRouteArgs>(name);
+}
+
+class WorkoutRouteArgs {
+  const WorkoutRouteArgs({
+    this.key,
+    required this.name,
+    required this.exercises,
+  });
+
+  final Key? key;
+
+  final String name;
+
+  final List<Map<String, dynamic>> exercises;
+
+  @override
+  String toString() {
+    return 'WorkoutRouteArgs{key: $key, name: $name, exercises: $exercises}';
+  }
+}
+
+/// generated route for
+/// [WorkoutsPage]
+class WorkoutsRoute extends PageRouteInfo<void> {
+  const WorkoutsRoute({List<PageRouteInfo>? children})
+      : super(
+          WorkoutsRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'WorkoutsRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }

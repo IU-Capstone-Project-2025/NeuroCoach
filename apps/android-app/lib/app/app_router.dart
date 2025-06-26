@@ -4,8 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import '../features/chat/presentation/screens/chat_page.dart';
 import '../features/settings/presentation/screens/settings_page.dart';
+import '../features/settings/presentation/screens/settings_main_page.dart';
 import '../features/path/presentation/screens/path_page.dart';
 import '../features/login/presentation/auth_page.dart';
+import '../features/settings/presentation/screens/profile_page.dart';
+import '../features/path/presentation/screens/workouts_page.dart';
+import '../features/path/presentation/screens/workout_page.dart';
+
 
 part 'app_router.gr.dart';
 
@@ -39,8 +44,18 @@ class AppRouter extends _$AppRouter {
       path: '/home',
       children: [
         AutoRoute(page: ChatRoute.page, path: 'chat'),
-        AutoRoute(page: PathRoute.page, path: 'path', initial: true),
-        AutoRoute(page: SettingsRoute.page, path: 'settings'),
+        AutoRoute(page: WorkoutsRoute.page, path: 'workouts', initial: true, children: [
+          AutoRoute(page: WorkoutRoute.page, path: 'workout'),
+          AutoRoute(page: PathRoute.page, path: '')
+        ]),
+        AutoRoute(
+          page: SettingsRoute.page,
+          path: 'settings',
+          children: [
+            AutoRoute(page: SettingsMainRoute.page, path: ''), // default
+            AutoRoute(page: ProfileRoute.page, path: 'profile'),
+          ],
+        ),
       ],
     ),
   ];
