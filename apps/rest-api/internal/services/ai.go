@@ -73,8 +73,17 @@ func (s *AIService) GenerateWorkoutPlan(ctx context.Context) (*models.WorkoutPla
 		)
 	}
 
+	// Calculate required workouts
+	workoutsPerWeek := profile.AvailableMinutes / 50
+	if workoutsPerWeek < 2 {
+		workoutsPerWeek = 2
+	}
+	if workoutsPerWeek > 6 {
+		workoutsPerWeek = 6
+	}
+
 	// Prepare system message with JSON schema
-	systemContent := `You are a fitness expert. Generate a workout plan and respond with ONLY valid JSON. No explanations, no markdown, no code blocks - just pure JSON.
+	systemContent := fmt.Sprintf(`You are a fitness expert. Generate a workout plan with EXACTLY %d workouts and respond with ONLY valid JSON.
 
 JSON structure:
 {
@@ -97,7 +106,9 @@ JSON structure:
       ]
     }
   ]
-}`
+}
+
+IMPORTANT: Create EXACTLY %d different workouts in the workouts array.`, workoutsPerWeek, workoutsPerWeek)
 
 	// Prepare user prompt with profile data
 	userPrompt := s.formatWorkoutPrompt(profile)
@@ -170,14 +181,13 @@ JSON structure:
 		UpdatedAt: now,
 	}
 
-	// Add IDs to nested objects
-	for i := range workoutPlan.Workouts {
-		workoutPlan.Workouts[i].WorkoutID = primitive.NewObjectID()
-
-		for j := range workoutPlan.Workouts[i].Exercises {
-			workoutPlan.Workouts[i].Exercises[j].ExerciseID = primitive.NewObjectID()
-		}
-	}
+	// Generate full schedule for timeframe
+	totalWeeks := s.getWeeksFromTimeframe(profile.Timeframe)
+	totalWorkouts := workoutsPerWeek * totalWeeks
+	fullSchedule := s.generateFullSchedule(generatedData.Workouts, workoutsPerWeek, totalWorkouts)
+	
+	// Replace workouts with full schedule
+	workoutPlan.Workouts = fullSchedule
 
 	// Save the generated plan
 	if err := s.MongoDBRepo.SaveWorkoutPlan(ctx, workoutPlan); err != nil {
@@ -292,14 +302,146 @@ func (s *AIService) formatWorkoutPrompt(profile *models.FitnessProfile) string {
 		sb.WriteString("\n")
 	}
 
+	// Add timeframe-specific guidance
+	sb.WriteString("\n")
+	sb.WriteString(s.getTimeframeGuidance(profile.Timeframe, profile.AvailableMinutes))
+	sb.WriteString("\n")
+
 	sb.WriteString("\nThe plan should include:\n")
 	sb.WriteString("1. Weekly schedule with specific exercises\n")
 	sb.WriteString("2. Sets, reps, and rest periods\n")
 	sb.WriteString("3. Progression plan\n")
 	sb.WriteString("4. Safety considerations\n")
-	sb.WriteString("5. Format in markdown\n")
+	sb.WriteString("5. Format in JSON\n")
 
 	return sb.String()
+}
+
+func (s *AIService) getTimeframeGuidance(timeframe string, availableMinutes int) string {
+	// Calculate workouts per week (assuming 45-60 min per workout)
+	workoutsPerWeek := availableMinutes / 50
+	if workoutsPerWeek < 1 {
+		workoutsPerWeek = 1
+	}
+	if workoutsPerWeek > 6 {
+			workoutsPerWeek = 6
+	}
+
+	// Calculate total weeks and workouts
+	totalWeeks := s.getWeeksFromTimeframe(timeframe)
+	totalWorkouts := workoutsPerWeek * totalWeeks
+
+	// Generate workout schedule with dates
+	schedule := s.generateWorkoutSchedule(workoutsPerWeek, totalWeeks)
+
+	return fmt.Sprintf("PLAN: %d workouts per week for %d weeks (%d total workouts).\nSCHEDULE: %s\nFOCUS: %s",
+		workoutsPerWeek, totalWeeks, totalWorkouts, schedule, s.getFocusByTimeframe(timeframe))
+}
+
+func (s *AIService) getWeeksFromTimeframe(timeframe string) int {
+	switch timeframe {
+	case "1month": return 4
+	case "3months": return 12
+	case "6months": return 24
+	case "1year": return 52
+	default: return 12
+	}
+}
+
+func (s *AIService) getFocusByTimeframe(timeframe string) string {
+	switch timeframe {
+	case "1month": return "Foundation building and form mastery"
+	case "3months": return "Skill development and strength building"
+	case "6months": return "Progressive overload and body transformation"
+	case "1year": return "Complete fitness transformation with periodization"
+	default: return "General fitness improvement"
+	}
+}
+
+func (s *AIService) generateWorkoutSchedule(workoutsPerWeek, totalWeeks int) string {
+	now := time.Now()
+	var schedule []string
+	
+	// Generate first week as example
+	for i := 0; i < workoutsPerWeek && i < 7; i++ {
+		workoutDate := now.AddDate(0, 0, i*2) // Every other day
+		schedule = append(schedule, workoutDate.Format("Jan 2"))
+	}
+	
+	return fmt.Sprintf("Week 1: %s (pattern repeats for %d weeks)", strings.Join(schedule, ", "), totalWeeks)
+}
+
+func (s *AIService) createFallbackWorkouts(count int) []models.Workout {
+	workouts := []models.Workout{
+		{Name: "Upper Body", Description: "Chest, back, shoulders", Status: "planned", Exercises: []models.Exercise{{Name: "Push-ups", MuscleGroup: "Chest", Sets: 3, Reps: 12, RestSec: 60}}},
+		{Name: "Lower Body", Description: "Legs and glutes", Status: "planned", Exercises: []models.Exercise{{Name: "Squats", MuscleGroup: "Legs", Sets: 3, Reps: 15, RestSec: 60}}},
+		{Name: "Core", Description: "Abs and core", Status: "planned", Exercises: []models.Exercise{{Name: "Plank", MuscleGroup: "Core", Sets: 3, Reps: 1, RestSec: 60}}},
+		{Name: "Cardio", Description: "Cardiovascular training", Status: "planned", Exercises: []models.Exercise{{Name: "Walking", MuscleGroup: "Cardio", Sets: 1, Reps: 1, RestSec: 0}}},
+	}
+	
+	if count > len(workouts) {
+		count = len(workouts)
+	}
+	return workouts[:count]
+}
+
+func (s *AIService) calculateWorkoutDate(workoutIndex, workoutsPerWeek int) time.Time {
+	now := time.Now()
+	weekNumber := workoutIndex / workoutsPerWeek
+	positionInWeek := workoutIndex % workoutsPerWeek
+	
+	// Calculate days within week based on workouts per week
+	var dayInWeek int
+	if workoutsPerWeek <= 3 {
+		dayInWeek = positionInWeek * 2 // Every other day
+	} else if workoutsPerWeek <= 5 {
+		dayInWeek = positionInWeek + (positionInWeek / 2) // Mon, Tue, Thu, Fri, Sat
+	} else {
+		dayInWeek = positionInWeek // 6 days: Mon-Sat, Sunday rest
+	}
+	
+	daysFromStart := weekNumber*7 + dayInWeek
+	workoutDate := now.AddDate(0, 0, daysFromStart)
+	// Return date without time (start of day)
+	return time.Date(workoutDate.Year(), workoutDate.Month(), workoutDate.Day(), 0, 0, 0, 0, workoutDate.Location())
+}
+
+func (s *AIService) generateFullSchedule(baseWorkouts []models.Workout, workoutsPerWeek, totalWorkouts int) []models.Workout {
+	var fullSchedule []models.Workout
+	
+	for i := 0; i < totalWorkouts; i++ {
+		// Cycle through base workouts
+		baseIndex := i % len(baseWorkouts)
+		workout := baseWorkouts[baseIndex]
+		
+		// Create new workout with unique ID and date
+		scheduledWorkout := models.Workout{
+			WorkoutID:     primitive.NewObjectID(),
+			Name:          fmt.Sprintf("%s - Week %d", workout.Name, (i/workoutsPerWeek)+1),
+			Description:   workout.Description,
+			Status:        "planned",
+			ScheduledDate: s.calculateWorkoutDate(i, workoutsPerWeek),
+			Exercises:     make([]models.Exercise, len(workout.Exercises)),
+		}
+		
+		// Copy exercises with new IDs
+		for j, exercise := range workout.Exercises {
+			scheduledWorkout.Exercises[j] = models.Exercise{
+				ExerciseID:  primitive.NewObjectID(),
+				Name:        exercise.Name,
+				MuscleGroup: exercise.MuscleGroup,
+				Sets:        exercise.Sets,
+				Reps:        exercise.Reps,
+				RestSec:     exercise.RestSec,
+				Notes:       exercise.Notes,
+				Technique:   exercise.Technique,
+			}
+		}
+		
+		fullSchedule = append(fullSchedule, scheduledWorkout)
+	}
+	
+	return fullSchedule
 }
 
 func (s *AIService) GetChatHistory(ctx context.Context) ([]models.ChatMessage, error) {
@@ -345,8 +487,17 @@ func (s *AIService) RegenerateWorkoutPlan(ctx context.Context, userComments stri
 		)
 	}
 
+	// Calculate required workouts for regeneration
+	workoutsPerWeek := profile.AvailableMinutes / 50
+	if workoutsPerWeek < 2 {
+		workoutsPerWeek = 2
+	}
+	if workoutsPerWeek > 6 {
+		workoutsPerWeek = 6
+	}
+
 	// Подготавливаем системное сообщение
-	systemContent := `You are a fitness expert updating workout plans. Respond with ONLY valid JSON. No explanations, no markdown, no code blocks - just pure JSON.
+	systemContent := fmt.Sprintf(`You are a fitness expert updating workout plans. Create EXACTLY %d workouts and respond with ONLY valid JSON.
 
 JSON structure:
 {
@@ -369,10 +520,12 @@ JSON structure:
       ]
     }
   ]
-}`
+}
+
+IMPORTANT: Create EXACTLY %d different workouts in the workouts array. Respond with ONLY JSON with workouts, do not add any additional comments`, workoutsPerWeek, workoutsPerWeek)
 
 	// Подготавливаем промпт с текущим планом и комментариями
-	userPrompt := s.formatRegeneratePrompt(profile, currentPlan, userComments)
+	userPrompt := s.formatRegeneratePrompt(profile, currentPlan, userComments, workoutsPerWeek)
 
 	// Подготавливаем сообщения для OpenRouter
 	messages := []OpenRouterMessage{
@@ -443,14 +596,13 @@ JSON structure:
 		UpdatedAt: now,
 	}
 
-	// Добавляем ID к вложенным объектам
-	for i := range updatedPlan.Workouts {
-		updatedPlan.Workouts[i].WorkoutID = primitive.NewObjectID()
-
-		for j := range updatedPlan.Workouts[i].Exercises {
-			updatedPlan.Workouts[i].Exercises[j].ExerciseID = primitive.NewObjectID()
-		}
-	}
+	// Generate full schedule for timeframe
+	totalWeeks := s.getWeeksFromTimeframe(profile.Timeframe)
+	totalWorkouts := workoutsPerWeek * totalWeeks
+	fullSchedule := s.generateFullSchedule(generatedData.Workouts, workoutsPerWeek, totalWorkouts)
+	
+	// Replace workouts with full schedule
+	updatedPlan.Workouts = fullSchedule
 
 	// Сохраняем обновленный план
 	if err := s.MongoDBRepo.SaveWorkoutPlan(ctx, updatedPlan); err != nil {
@@ -507,7 +659,7 @@ func (s *AIService) GetUserProgress(ctx context.Context) (*models.UserProgress, 
 	return s.MongoDBRepo.GetUserProgress(ctx, userID)
 }
 
-func (s *AIService) formatRegeneratePrompt(profile *models.FitnessProfile, currentPlan *models.WorkoutPlan, userComments string) string {
+func (s *AIService) formatRegeneratePrompt(profile *models.FitnessProfile, currentPlan *models.WorkoutPlan, userComments string, requiredWorkouts int) string {
 	var sb strings.Builder
 
 	sb.WriteString("Update the existing workout plan based on user feedback.\n\n")
@@ -538,7 +690,12 @@ func (s *AIService) formatRegeneratePrompt(profile *models.FitnessProfile, curre
 	sb.WriteString("\nUser Comments/Feedback:\n")
 	sb.WriteString(userComments)
 
-	sb.WriteString("\n\nPlease update the workout plan based on the user's feedback while maintaining:")
+	// Add timeframe-specific guidance
+	sb.WriteString("\n")
+	sb.WriteString(s.getTimeframeGuidance(profile.Timeframe, profile.AvailableMinutes))
+	sb.WriteString("\n")
+
+	sb.WriteString(fmt.Sprintf("\n\nPlease update the workout plan with EXACTLY %d workouts based on the user's feedback while maintaining:", requiredWorkouts))
 	sb.WriteString("\n1. Appropriate difficulty for their fitness level")
 	sb.WriteString("\n2. Alignment with their fitness goals")
 	sb.WriteString("\n3. Consideration of their health issues")
