@@ -12,6 +12,8 @@ on:
       - 'apps/frontend/**'
       - '.github/**'
 
+  workflow_dispatch:
+
 jobs:
   deploy:
     name: SSH & Deploy
