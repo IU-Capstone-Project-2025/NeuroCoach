@@ -28,11 +28,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       
-      - name: Deploy
+      - name: Deploy via SSH
         run: |
           ssh -o StrictHostKeyChecking=no blazz1t@blazz1t.online << 'EOF'
-            cd NeuroCoach
-            git pull origin main
-            docker-compose down
-            docker-compose up --build -d
-      EOF 
+          cd NeuroCoach
+          git pull origin main
+          docker-compose down
+          docker-compose up --build -d
+          EOF
