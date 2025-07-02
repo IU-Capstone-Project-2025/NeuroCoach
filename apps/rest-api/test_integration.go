@@ -131,6 +131,14 @@ func (m *mockMongoRepo) GetUserProgress(ctx context.Context, userID int) (*model
 	return &models.UserProgress{}, nil
 }
 
+func (m *mockMongoRepo) GetShortPlan(ctx context.Context, userID int) (*models.ShortWorkoutPlan, error) {
+	return nil, nil
+}
+
+func (m *mockMongoRepo) SaveShortPlan(ctx context.Context, plan *models.ShortWorkoutPlan) error {
+	return nil
+}
+
 func (m *mockMongoRepo) GetRating(ctx context.Context) ([]models.UserRating, error) {
 	return []models.UserRating{
 		{UserID: 1, TotalWorkouts: 25, MaxConsecutive: 7, Score: 32},

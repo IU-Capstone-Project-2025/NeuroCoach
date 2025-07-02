@@ -130,11 +130,13 @@ func (m *MongoDBRepository) updateExpiredWorkouts(ctx context.Context, plan *mod
 
 	if updated {
 		// Save updated plan back to database
-		m.workoutCollection.UpdateOne(
+		_, _ = m.workoutCollection.UpdateOne(
 			ctx,
 			bson.M{"user_id": plan.UserID},
 			bson.M{"$set": bson.M{"workouts": plan.Workouts}},
 		)
+		// Note: Error is intentionally ignored here as this is a background update
+		// and failure doesn't affect the main operation
 	}
 }
 
@@ -332,7 +334,7 @@ func (m *MongoDBRepository) GetRating(ctx context.Context) ([]models.UserRating,
 			continue
 		}
 
-		// Получаем максимальное количество дней подряд для пользователя
+		// Get maximum consecutive days for user
 		maxConsecutive := m.getMaxConsecutiveDays(ctx, progress.UserID)
 
 		rating := models.UserRating{
@@ -344,7 +346,7 @@ func (m *MongoDBRepository) GetRating(ctx context.Context) ([]models.UserRating,
 		ratings = append(ratings, rating)
 	}
 
-	// Сортируем по очкам по убыванию
+	// Sort by score descending
 	for i := 0; i < len(ratings)-1; i++ {
 		for j := i + 1; j < len(ratings); j++ {
 			if ratings[i].Score < ratings[j].Score {
@@ -376,14 +378,14 @@ func (m *MongoDBRepository) getMaxConsecutiveDays(ctx context.Context, userID in
 		return 0
 	}
 
-	// Группируем тренировки по дням
+	// Group workouts by days
 	daysMap := make(map[string]bool)
 	for _, completion := range completions {
 		dayKey := completion.CompletedAt.Format("2006-01-02")
 		daysMap[dayKey] = true
 	}
 
-	// Преобразуем в отсортированный слайс дат
+	// Convert to sorted slice of dates
 	var days []time.Time
 	for dayKey := range daysMap {
 		day, _ := time.Parse("2006-01-02", dayKey)
@@ -394,7 +396,7 @@ func (m *MongoDBRepository) getMaxConsecutiveDays(ctx context.Context, userID in
 		return 0
 	}
 
-	// Сортируем даты
+	// Sort dates
 	for i := 0; i < len(days)-1; i++ {
 		for j := i + 1; j < len(days); j++ {
 			if days[i].After(days[j]) {

@@ -51,6 +51,14 @@ func (m *mockMongoDBRepo) GetUserProgress(ctx context.Context, userID int) (*mod
 	return nil, nil
 }
 
+func (m *mockMongoDBRepo) GetShortPlan(ctx context.Context, userID int) (*models.ShortWorkoutPlan, error) {
+	return nil, nil
+}
+
+func (m *mockMongoDBRepo) SaveShortPlan(ctx context.Context, plan *models.ShortWorkoutPlan) error {
+	return nil
+}
+
 func TestAIService_GetRating(t *testing.T) {
 	mockRepo := &mockMongoDBRepo{}
 	service := &AIService{

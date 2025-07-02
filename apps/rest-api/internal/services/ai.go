@@ -158,7 +158,7 @@ IMPORTANT: Create EXACTLY %d different workouts in the workouts array.`, workout
 		)
 	}
 
-	// Заполняем отсутствующие поля значениями по умолчанию
+	// Fill missing fields with default values
 	for i := range generatedData.Workouts {
 		if generatedData.Workouts[i].Status == "" {
 			generatedData.Workouts[i].Status = "planned"
@@ -190,7 +190,7 @@ IMPORTANT: Create EXACTLY %d different workouts in the workouts array.`, workout
 	totalWeeks := s.getWeeksFromTimeframe(profile.Timeframe)
 	totalWorkouts := workoutsPerWeek * totalWeeks
 	fullSchedule := s.generateFullSchedule(generatedData.Workouts, workoutsPerWeek, totalWorkouts)
-	
+
 	// Replace workouts with full schedule
 	workoutPlan.Workouts = fullSchedule
 
@@ -205,11 +205,11 @@ IMPORTANT: Create EXACTLY %d different workouts in the workouts array.`, workout
 		CreatedAt:       now,
 		UpdatedAt:       now,
 	}
-	
+
 	if err := s.MongoDBRepo.SaveShortPlan(ctx, shortPlan); err != nil {
 		fmt.Printf("Failed to save short plan: %v\n", err)
 	}
-	
+
 	if err := s.MongoDBRepo.SaveWorkoutPlan(ctx, workoutPlan); err != nil {
 		fmt.Printf("Failed to save workout plan: %v\n", err)
 	}
@@ -343,7 +343,7 @@ func (s *AIService) getTimeframeGuidance(timeframe string, availableMinutes int)
 		workoutsPerWeek = 1
 	}
 	if workoutsPerWeek > 6 {
-			workoutsPerWeek = 6
+		workoutsPerWeek = 6
 	}
 
 	// Calculate total weeks and workouts
@@ -359,34 +359,44 @@ func (s *AIService) getTimeframeGuidance(timeframe string, availableMinutes int)
 
 func (s *AIService) getWeeksFromTimeframe(timeframe string) int {
 	switch timeframe {
-	case "1month": return 4
-	case "3months": return 12
-	case "6months": return 24
-	case "1year": return 52
-	default: return 12
+	case "1month":
+		return 4
+	case "3months":
+		return 12
+	case "6months":
+		return 24
+	case "1year":
+		return 52
+	default:
+		return 12
 	}
 }
 
 func (s *AIService) getFocusByTimeframe(timeframe string) string {
 	switch timeframe {
-	case "1month": return "Foundation building and form mastery"
-	case "3months": return "Skill development and strength building"
-	case "6months": return "Progressive overload and body transformation"
-	case "1year": return "Complete fitness transformation with periodization"
-	default: return "General fitness improvement"
+	case "1month":
+		return "Foundation building and form mastery"
+	case "3months":
+		return "Skill development and strength building"
+	case "6months":
+		return "Progressive overload and body transformation"
+	case "1year":
+		return "Complete fitness transformation with periodization"
+	default:
+		return "General fitness improvement"
 	}
 }
 
 func (s *AIService) generateWorkoutSchedule(workoutsPerWeek, totalWeeks int) string {
 	now := time.Now()
 	var schedule []string
-	
+
 	// Generate first week as example
 	for i := 0; i < workoutsPerWeek && i < 7; i++ {
 		workoutDate := now.AddDate(0, 0, i*2) // Every other day
 		schedule = append(schedule, workoutDate.Format("Jan 2"))
 	}
-	
+
 	return fmt.Sprintf("Week 1: %s (pattern repeats for %d weeks)", strings.Join(schedule, ", "), totalWeeks)
 }
 
@@ -405,7 +415,7 @@ func (s *AIService) createFallbackWorkouts(count int) []models.Workout {
 		{Name: "Core", Description: "Abs and core", Status: "planned", Exercises: []models.Exercise{{Name: "Plank", MuscleGroup: "Core", Sets: 3, Reps: 1, RestSec: 60}}},
 		{Name: "Cardio", Description: "Cardiovascular training", Status: "planned", Exercises: []models.Exercise{{Name: "Walking", MuscleGroup: "Cardio", Sets: 1, Reps: 1, RestSec: 0}}},
 	}
-	
+
 	if count > len(workouts) {
 		count = len(workouts)
 	}
@@ -416,7 +426,7 @@ func (s *AIService) calculateWorkoutDate(workoutIndex, workoutsPerWeek int) time
 	now := time.Now()
 	weekNumber := workoutIndex / workoutsPerWeek
 	positionInWeek := workoutIndex % workoutsPerWeek
-	
+
 	// Calculate days within week based on workouts per week
 	var dayInWeek int
 	if workoutsPerWeek <= 3 {
@@ -426,7 +436,7 @@ func (s *AIService) calculateWorkoutDate(workoutIndex, workoutsPerWeek int) time
 	} else {
 		dayInWeek = positionInWeek // 6 days: Mon-Sat, Sunday rest
 	}
-	
+
 	daysFromStart := weekNumber*7 + dayInWeek
 	workoutDate := now.AddDate(0, 0, daysFromStart)
 	// Return date without time (start of day)
@@ -435,12 +445,12 @@ func (s *AIService) calculateWorkoutDate(workoutIndex, workoutsPerWeek int) time
 
 func (s *AIService) generateFullSchedule(baseWorkouts []models.Workout, workoutsPerWeek, totalWorkouts int) []models.Workout {
 	var fullSchedule []models.Workout
-	
+
 	for i := 0; i < totalWorkouts; i++ {
 		// Cycle through base workouts
 		baseIndex := i % len(baseWorkouts)
 		workout := baseWorkouts[baseIndex]
-		
+
 		// Create new workout with unique ID and date
 		scheduledWorkout := models.Workout{
 			WorkoutID:     primitive.NewObjectID(),
@@ -450,7 +460,7 @@ func (s *AIService) generateFullSchedule(baseWorkouts []models.Workout, workouts
 			ScheduledDate: s.calculateWorkoutDate(i, workoutsPerWeek),
 			Exercises:     make([]models.Exercise, len(workout.Exercises)),
 		}
-		
+
 		// Copy exercises with new IDs
 		for j, exercise := range workout.Exercises {
 			scheduledWorkout.Exercises[j] = models.Exercise{
@@ -464,10 +474,10 @@ func (s *AIService) generateFullSchedule(baseWorkouts []models.Workout, workouts
 				Technique:   exercise.Technique,
 			}
 		}
-		
+
 		fullSchedule = append(fullSchedule, scheduledWorkout)
 	}
-	
+
 	return fullSchedule
 }
 
@@ -494,7 +504,7 @@ func (s *AIService) RegenerateWorkoutPlan(ctx context.Context, userComments stri
 		)
 	}
 
-	// Получаем короткий план для контекста
+	// Get short plan for context
 	currentShortPlan, err := s.MongoDBRepo.GetShortPlan(ctx, userID)
 	if err != nil {
 		return nil, NewServiceError(
@@ -504,7 +514,7 @@ func (s *AIService) RegenerateWorkoutPlan(ctx context.Context, userComments stri
 		)
 	}
 
-	// Получаем профиль пользователя
+	// Get user profile
 	profile, err := s.Repo.GetFitnessProfile(ctx, userID)
 	if err != nil {
 		return nil, NewServiceError(
@@ -523,7 +533,7 @@ func (s *AIService) RegenerateWorkoutPlan(ctx context.Context, userComments stri
 		workoutsPerWeek = 6
 	}
 
-	// Подготавливаем системное сообщение
+	// Prepare system message
 	systemContent := fmt.Sprintf(`You are a fitness expert. You MUST follow user feedback exactly. Create EXACTLY %d workouts and respond with ONLY valid JSON.
 
 CRITICAL: User feedback in the prompt is MANDATORY and must be implemented precisely. Do not ignore any user requirements.
@@ -553,7 +563,7 @@ JSON structure:
 
 IMPORTANT: Create EXACTLY %d different workouts. Follow ALL user requirements from the prompt.`, workoutsPerWeek, workoutsPerWeek)
 
-	// Подготавливаем промпт с коротким планом и комментариями
+	// Prepare prompt with short plan and comments
 	if currentShortPlan == nil {
 		currentShortPlan = &models.ShortWorkoutPlan{
 			UserID:          userID,
@@ -568,13 +578,13 @@ IMPORTANT: Create EXACTLY %d different workouts. Follow ALL user requirements fr
 	}
 	userPrompt := s.formatRegeneratePrompt(profile, currentShortPlan, userComments, workoutsPerWeek)
 
-	// Подготавливаем сообщения для OpenRouter
+	// Prepare messages for OpenRouter
 	messages := []OpenRouterMessage{
 		{Role: "system", Content: systemContent},
 		{Role: "user", Content: userPrompt},
 	}
 
-	// Вызываем ИИ
+	// Call AI
 	fmt.Printf("Starting AI request...\n")
 	content, err := s.Client.CreateChatCompletion(ctx, messages, true)
 	if err != nil {
@@ -624,10 +634,10 @@ IMPORTANT: Create EXACTLY %d different workouts. Follow ALL user requirements fr
 				"Failed to parse AI response",
 				fmt.Errorf("JSON parse error: %v, cleaned content: %s", err, cleanContent),
 			)
-		} 
+		}
 	}
 
-	// Заполняем отсутствующие поля значениями по умолчанию
+	// Fill missing fields with default values
 	for i := range generatedData.Workouts {
 		if generatedData.Workouts[i].Status == "" {
 			generatedData.Workouts[i].Status = "planned"
@@ -639,18 +649,18 @@ IMPORTANT: Create EXACTLY %d different workouts. Follow ALL user requirements fr
 		}
 	}
 
-	// Обновляем короткий план
+	// Update short plan
 	now := time.Now()
 	currentShortPlan.Title = generatedData.Title
 	currentShortPlan.BaseWorkouts = generatedData.Workouts
 	currentShortPlan.UpdatedAt = now
-	
-	// Сохраняем обновленный короткий план
+
+	// Save updated short plan
 	if err := s.MongoDBRepo.SaveShortPlan(ctx, currentShortPlan); err != nil {
 		fmt.Printf("Failed to save updated short plan: %v\n", err)
 	}
-	
-	// Создаем полный план
+
+	// Create full plan
 	updatedPlan := &models.WorkoutPlan{
 		UserID:    userID,
 		Title:     generatedData.Title,
@@ -664,11 +674,11 @@ IMPORTANT: Create EXACTLY %d different workouts. Follow ALL user requirements fr
 	totalWeeks := s.getWeeksFromTimeframe(profile.Timeframe)
 	totalWorkouts := workoutsPerWeek * totalWeeks
 	fullSchedule := s.generateFullSchedule(generatedData.Workouts, workoutsPerWeek, totalWorkouts)
-	
+
 	// Replace workouts with full schedule
 	updatedPlan.Workouts = fullSchedule
 
-	// Сохраняем обновленный план
+	// Save updated plan
 	if err := s.MongoDBRepo.SaveWorkoutPlan(ctx, updatedPlan); err != nil {
 		return nil, NewServiceError(
 			http.StatusInternalServerError,
@@ -722,7 +732,6 @@ func (s *AIService) GetUserProgress(ctx context.Context) (*models.UserProgress, 
 
 	return s.MongoDBRepo.GetUserProgress(ctx, userID)
 }
-
 
 func (s *AIService) GetRating(ctx context.Context) ([]models.UserRating, error) {
 	return s.MongoDBRepo.GetRating(ctx)
