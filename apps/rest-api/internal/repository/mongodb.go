@@ -130,11 +130,13 @@ func (m *MongoDBRepository) updateExpiredWorkouts(ctx context.Context, plan *mod
 
 	if updated {
 		// Save updated plan back to database
-		m.workoutCollection.UpdateOne(
+		_, _ = m.workoutCollection.UpdateOne(
 			ctx,
 			bson.M{"user_id": plan.UserID},
 			bson.M{"$set": bson.M{"workouts": plan.Workouts}},
 		)
+		// Note: Error is intentionally ignored here as this is a background update
+		// and failure doesn't affect the main operation
 	}
 }
 
