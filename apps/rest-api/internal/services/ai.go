@@ -723,6 +723,34 @@ func (s *AIService) GetUserProgress(ctx context.Context) (*models.UserProgress, 
 	return s.MongoDBRepo.GetUserProgress(ctx, userID)
 }
 
+func (s *AIService) GenerateMotivationalMessage(ctx context.Context) (string, error) {
+	userID, err := s.GetUserIDFromContext(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	progress, err := s.MongoDBRepo.GetUserProgress(ctx, userID)
+	if err != nil {
+		return "Keep pushing forward! Every workout counts.", nil
+	}
+
+	if s.Client == nil {
+		return "You're doing amazing! Keep up the great work!", nil
+	}
+
+	messages := []OpenRouterMessage{
+		{Role: "system", Content: "Generate a short motivational fitness message. Be encouraging and specific."},
+		{Role: "user", Content: fmt.Sprintf("User: %d workouts, %d consecutive days, %s level. Motivate them!", progress.TotalWorkouts, progress.ConsecutiveDays, progress.Level)},
+	}
+
+	response, err := s.Client.CreateChatCompletion(ctx, messages, false)
+	if err != nil {
+		return "You're crushing it! Keep up the excellent work!", nil
+	}
+
+	return response, nil
+}
+
 func (s *AIService) formatRegeneratePrompt(profile *models.FitnessProfile, currentShortPlan *models.ShortWorkoutPlan, userComments string, requiredWorkouts int) string {
 	var sb strings.Builder
 
