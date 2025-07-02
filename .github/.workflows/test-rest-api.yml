@@ -1,0 +1,38 @@
+name: Test REST api
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/rest-api/**'
+
+jobs:
+  test-backend:
+    name: Lint and Test Backend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: apps/rest-api
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+        
+      - name: Run linter
+        run: make lint
+      
+      - name: Run test setup
+        run: make test-setup
+      
+      - name: Run tests
+        run: make test
+      
+      - name: Cleanup
+        run: make test-teardown
