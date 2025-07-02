@@ -52,7 +52,7 @@ func TestRegister_RequestStructure(t *testing.T) {
 
 	req := httptest.NewRequest("POST", "/register", bytes.NewBuffer(body))
 
-	// Простой тест структуры запроса
+	// Simple test of request structure
 	if req.Method != "POST" {
 		t.Errorf("Expected POST method, got %s", req.Method)
 	}
@@ -61,7 +61,7 @@ func TestRegister_RequestStructure(t *testing.T) {
 		t.Errorf("Expected /register path, got %s", req.URL.Path)
 	}
 
-	// Проверяем, что можем декодировать тело запроса
+	// Check that we can decode request body
 	var decodedBody models.RegisterRequest
 	err := json.NewDecoder(req.Body).Decode(&decodedBody)
 	if err != nil {

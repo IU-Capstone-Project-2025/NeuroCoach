@@ -52,7 +52,7 @@ func (h *Handlers) GetRating(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, http.StatusOK, rating)
 }
-  
+
 func (h *Handlers) GetMotivationalMessage(w http.ResponseWriter, r *http.Request) {
 	message, err := h.AIService.GenerateMotivationalMessage(r.Context())
 	if err != nil {
@@ -62,4 +62,3 @@ func (h *Handlers) GetMotivationalMessage(w http.ResponseWriter, r *http.Request
 
 	respondWithJSON(w, http.StatusOK, map[string]string{"message": message})
 }
-
