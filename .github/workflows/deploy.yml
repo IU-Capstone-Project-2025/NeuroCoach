@@ -10,7 +10,7 @@ on:
       - 'apps/rest-api/**'
       - 'apps/ws-api/**'
       - 'apps/frontend/**'
-      - '.github/**'
+      - '.github/workflows/deploy.yml'
 
   workflow_dispatch:
 
