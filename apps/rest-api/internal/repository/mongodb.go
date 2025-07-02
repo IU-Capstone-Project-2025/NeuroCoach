@@ -16,6 +16,7 @@ import (
 type MongoDBRepository struct {
 	chatCollection       *mongo.Collection
 	workoutCollection    *mongo.Collection
+	shortPlanCollection  *mongo.Collection
 	completionCollection *mongo.Collection
 	progressCollection   *mongo.Collection
 }
@@ -40,6 +41,7 @@ func NewMongoDBRepository(uri, dbName string) (MongoDBRep, error) {
 	return &MongoDBRepository{
 		chatCollection:       db.Collection("chat_messages"),
 		workoutCollection:    db.Collection("workout_plans"),
+		shortPlanCollection:  db.Collection("short_plans"),
 		completionCollection: db.Collection("workout_completions"),
 		progressCollection:   db.Collection("user_progress"),
 	}, nil
@@ -86,7 +88,54 @@ func (m *MongoDBRepository) GetWorkoutPlan(ctx context.Context, userID int) (*mo
 	if err == mongo.ErrNoDocuments {
 		return nil, nil
 	}
+	if err != nil {
+		return nil, err
+	}
+
+	// Update expired workouts
+	m.updateExpiredWorkouts(ctx, &plan)
+
+	return &plan, nil
+}
+
+func (m *MongoDBRepository) SaveShortPlan(ctx context.Context, plan *models.ShortWorkoutPlan) error {
+	_, err := m.shortPlanCollection.UpdateOne(
+		ctx,
+		bson.M{"user_id": plan.UserID},
+		bson.M{"$set": plan},
+		options.Update().SetUpsert(true),
+	)
+	return err
+}
+
+func (m *MongoDBRepository) GetShortPlan(ctx context.Context, userID int) (*models.ShortWorkoutPlan, error) {
+	var plan models.ShortWorkoutPlan
+	err := m.shortPlanCollection.FindOne(ctx, bson.M{"user_id": userID}).Decode(&plan)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
 	return &plan, err
+}
+
+func (m *MongoDBRepository) updateExpiredWorkouts(ctx context.Context, plan *models.WorkoutPlan) {
+	now := time.Now()
+	updated := false
+
+	for i := range plan.Workouts {
+		if plan.Workouts[i].Status == "planned" && plan.Workouts[i].ScheduledDate.Before(now) {
+			plan.Workouts[i].Status = "expired"
+			updated = true
+		}
+	}
+
+	if updated {
+		// Save updated plan back to database
+		m.workoutCollection.UpdateOne(
+			ctx,
+			bson.M{"user_id": plan.UserID},
+			bson.M{"$set": bson.M{"workouts": plan.Workouts}},
+		)
+	}
 }
 
 func (m *MongoDBRepository) GetWorkoutByID(ctx context.Context, userID int, workoutID string) (*models.Workout, error) {
@@ -106,6 +155,16 @@ func (m *MongoDBRepository) GetWorkoutByID(ctx context.Context, userID int, work
 
 func (m *MongoDBRepository) CompleteWorkout(ctx context.Context, userID int, workoutID string) error {
 	objID, err := primitive.ObjectIDFromHex(workoutID)
+	if err != nil {
+		return err
+	}
+
+	// Update workout status to "done"
+	_, err = m.workoutCollection.UpdateOne(
+		ctx,
+		bson.M{"user_id": userID, "workouts.workout_id": objID},
+		bson.M{"$set": bson.M{"workouts.$.status": "done"}},
+	)
 	if err != nil {
 		return err
 	}

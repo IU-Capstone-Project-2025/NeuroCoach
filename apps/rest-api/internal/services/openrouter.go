@@ -61,7 +61,7 @@ func NewOpenRouterClient(apiKey string) *OpenRouterClient {
 	return &OpenRouterClient{
 		apiKey: apiKey,
 		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout: 90 * time.Second,
 		},
 		currentModelIndex: 0,
 	}
