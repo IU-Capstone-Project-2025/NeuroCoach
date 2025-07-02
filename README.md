@@ -25,3 +25,4 @@
   - Make sure you have all Docker prerequisites installed and run:  
     `docker compose up --build -d`
   - Access parts of the project as described above, just replacing the domain with `localhost`
+  - If you get 404s on subdomains, confirm your `hosts` file is edited correctly and the `nginx` container is listening on the right domain names.
