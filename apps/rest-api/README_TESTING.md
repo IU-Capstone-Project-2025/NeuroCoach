@@ -1,91 +1,91 @@
 # Testing Guide
 
 ## Overview
-Этот проект покрыт различными типами тестов для обеспечения качества и надежности кода.
+This project is covered by various types of tests to ensure code quality and reliability.
 
-## Структура тестов
+## Test Structure
 
-### Unit Tests (Модульные тесты)
-- `internal/handlers/handlers_test.go` - тесты для HTTP handlers
-- `internal/services/ai_test.go` - тесты для AI сервиса
-- `internal/repository/mongodb_test.go` - тесты для MongoDB repository
-- `internal/models/models_test.go` - тесты для моделей данных
-- `pkg/utils/crypto_test.go` - тесты для криптографических утилит
-- `pkg/utils/jwt_test.go` - тесты для JWT утилит
+### Unit Tests
+- `internal/handlers/handlers_test.go` - tests for HTTP handlers
+- `internal/services/ai_test.go` - tests for AI service
+- `internal/repository/mongodb_test.go` - tests for MongoDB repository
+- `internal/models/models_test.go` - tests for data models
+- `pkg/utils/crypto_test.go` - tests for cryptographic utilities
+- `pkg/utils/jwt_test.go` - tests for JWT utilities
 
-### Integration Tests (Интеграционные тесты)
-- `test_integration.go` - интеграционные тесты для API endpoints
+### Integration Tests
+- `test_integration.go` - integration tests for API endpoints
 
-### Benchmark Tests (Бенчмарки)
-- Тесты производительности для критических алгоритмов
+### Benchmark Tests
+- Performance tests for critical algorithms
 
-## Запуск тестов
+## Running Tests
 
-### Все тесты
+### All tests
 ```bash
 make test
 ```
 
-### Только unit тесты
+### Unit tests only
 ```bash
 make test-unit
 ```
 
-### Интеграционные тесты
+### Integration tests
 ```bash
 make test-integration
 ```
 
-### Тесты с покрытием
+### Tests with coverage
 ```bash
 make test-coverage
 ```
 
-### Бенчмарки
+### Benchmarks
 ```bash
 make benchmark
 ```
 
-## Настройка тестовой среды
+## Test Environment Setup
 
-### Тестовые базы данных
+### Test databases
 ```bash
-make test-setup    # Создать тестовые БД
-make test-teardown # Удалить тестовые БД
+make test-setup    # Create test databases
+make test-teardown # Remove test databases
 ```
 
-## Покрытие кода
+## Code Coverage
 
-Основные компоненты покрыты тестами:
+Main components covered by tests:
 
-### Handlers (HTTP обработчики)
+### Handlers (HTTP handlers)
 - ✅ Register/Login endpoints
 - ✅ Rating endpoint
 - ✅ Error handling
 
-### Services (Бизнес-логика)
+### Services (Business logic)
 - ✅ AI Service rating functionality
 - ✅ Error handling
 - ✅ Mock dependencies
 
-### Repository (Работа с данными)
+### Repository (Data layer)
 - ✅ MongoDB rating calculation
 - ✅ Consecutive days algorithm
 - ✅ Level calculation logic
 
-### Utils (Утилиты)
+### Utils (Utilities)
 - ✅ Password hashing/verification
 - ✅ JWT generation/validation
 - ✅ Token expiration handling
 
-### Models (Модели данных)
+### Models (Data models)
 - ✅ Score calculation
 - ✅ Data validation
 - ✅ Level progression
 
-## Тестовые данные
+## Test Data
 
-### Mock данные для рейтинга
+### Mock data for rating
 ```go
 []models.UserRating{
     {UserID: 1, TotalWorkouts: 25, MaxConsecutive: 7, Score: 32},
@@ -93,46 +93,46 @@ make test-teardown # Удалить тестовые БД
 }
 ```
 
-### Тестовые сценарии
-- Базовый расчет рейтинга
-- Обработка ошибок
-- Валидация данных
-- Производительность алгоритмов
+### Test scenarios
+- Basic rating calculation
+- Error handling
+- Data validation
+- Algorithm performance
 
 ## CI/CD
 
-GitHub Actions автоматически запускает:
-- Unit тесты
-- Интеграционные тесты
-- Линтер
-- Генерацию отчетов покрытия
+GitHub Actions automatically runs:
+- Unit tests
+- Integration tests
+- Linter
+- Coverage report generation
 
-## Лучшие практики
+## Best Practices
 
-1. **Изоляция тестов** - каждый тест независим
-2. **Mock зависимости** - используем mock для внешних сервисов
-3. **Тестовые данные** - четкие и понятные тестовые случаи
-4. **Покрытие** - стремимся к высокому покрытию критического кода
-5. **Производительность** - бенчмарки для важных алгоритмов
+1. **Test isolation** - each test is independent
+2. **Mock dependencies** - use mocks for external services
+3. **Test data** - clear and understandable test cases
+4. **Coverage** - aim for high coverage of critical code
+5. **Performance** - benchmarks for important algorithms
 
-## Добавление новых тестов
+## Adding New Tests
 
-При добавлении нового функционала:
+When adding new functionality:
 
-1. Создайте unit тесты для новых функций
-2. Добавьте интеграционные тесты для новых endpoints
-3. Обновите mock объекты при необходимости
-4. Добавьте бенчмарки для критических алгоритмов
+1. Create unit tests for new functions
+2. Add integration tests for new endpoints
+3. Update mock objects when necessary
+4. Add benchmarks for critical algorithms
 
-## Отладка тестов
+## Test Debugging
 
 ```bash
-# Запуск конкретного теста
+# Run specific test
 go test -v -run TestSpecificFunction ./internal/handlers
 
-# Запуск с подробным выводом
+# Run with verbose output
 go test -v ./...
 
-# Запуск с race detection
+# Run with race detection
 go test -race ./...
 ```
