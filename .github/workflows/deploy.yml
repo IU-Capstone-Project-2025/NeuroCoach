@@ -10,6 +10,7 @@ on:
       - 'apps/rest-api/**'
       - 'apps/ws-api/**'
       - 'apps/frontend/**'
+      - '.github/**'
 
 jobs:
   deploy:
