@@ -50,7 +50,7 @@ services:
     container_name: fitness-ai-db
   
   mongo:
-    image: mongo:6
+    image: mongo:4.4
     environment:
       - MONGO_INITDB_ROOT_USERNAME=user
       - MONGO_INITDB_ROOT_PASSWORD=password
