@@ -44,7 +44,7 @@ func TestGetRating(t *testing.T) {
 			// Test consecutive days calculation logic
 			for userID, dates := range tc.completions {
 				maxConsecutive := calculateMaxConsecutiveDaysFromDates(dates)
-				
+
 				var expectedMax int
 				for _, rating := range tc.expectedRating {
 					if rating.UserID == userID {
@@ -52,9 +52,9 @@ func TestGetRating(t *testing.T) {
 						break
 					}
 				}
-				
+
 				if maxConsecutive != expectedMax {
-					t.Errorf("User %d: expected max consecutive %d, got %d", 
+					t.Errorf("User %d: expected max consecutive %d, got %d",
 						userID, expectedMax, maxConsecutive)
 				}
 			}
@@ -132,9 +132,9 @@ func TestCalculateLevel(t *testing.T) {
 			// Create mock repository to test the method
 			repo := &MongoDBRepository{}
 			result := repo.calculateLevel(tc.workouts)
-			
+
 			if result != tc.expected {
-				t.Errorf("For %d workouts, expected %s, got %s", 
+				t.Errorf("For %d workouts, expected %s, got %s",
 					tc.workouts, tc.expected, result)
 			}
 		})

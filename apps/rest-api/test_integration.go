@@ -26,10 +26,10 @@ func TestRatingEndpointIntegration(t *testing.T) {
 
 	// Setup test configuration
 	cfg := &config.Config{
-		DatabaseURL: "postgres://postgres:postgres@localhost:5432/fitness_ai_test?sslmode=disable",
-		MongoURI:    "mongodb://localhost:27017/fitness_ai_test",
-		MongoDBName: "fitness_ai_test",
-		JWTSecret:   "test-secret",
+		DatabaseURL:   "postgres://postgres:postgres@localhost:5432/fitness_ai_test?sslmode=disable",
+		MongoURI:      "mongodb://localhost:27017/fitness_ai_test",
+		MongoDBName:   "fitness_ai_test",
+		JWTSecret:     "test-secret",
 		JWTExpiration: time.Hour,
 	}
 

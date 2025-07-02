@@ -29,8 +29,8 @@ type CompleteWorkoutRequest struct {
 }
 
 type UserRating struct {
-	UserID          int `json:"user_id"`
-	TotalWorkouts   int `json:"total_workouts"`
-	MaxConsecutive  int `json:"max_consecutive"`
-	Score           int `json:"score"`
+	UserID         int `json:"user_id"`
+	TotalWorkouts  int `json:"total_workouts"`
+	MaxConsecutive int `json:"max_consecutive"`
+	Score          int `json:"score"`
 }

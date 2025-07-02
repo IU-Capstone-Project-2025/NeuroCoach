@@ -76,7 +76,7 @@ func TestAIService_GetRating(t *testing.T) {
 	// Check score calculation
 	expectedScore := ratings[0].TotalWorkouts + ratings[0].MaxConsecutive
 	if ratings[0].Score != expectedScore {
-		t.Errorf("Score calculation incorrect: expected %d, got %d", 
+		t.Errorf("Score calculation incorrect: expected %d, got %d",
 			expectedScore, ratings[0].Score)
 	}
 }
@@ -87,7 +87,7 @@ func TestAIService_GetRating_Error(t *testing.T) {
 			return nil, NewServiceError(500, "Database error", nil)
 		},
 	}
-	
+
 	service := &AIService{
 		BaseService: BaseService{MongoDBRepo: mockRepo},
 	}

@@ -36,7 +36,7 @@ func TestRespondWithError(t *testing.T) {
 	}
 
 	var response models.ErrorResponse
-	json.Unmarshal(w.Body.Bytes(), &response)
+	_ = json.Unmarshal(w.Body.Bytes(), &response)
 
 	if response.Message != "test error" {
 		t.Errorf("Expected message 'test error', got %s", response.Message)
@@ -75,7 +75,7 @@ func TestRegister_RequestStructure(t *testing.T) {
 
 func TestNewHandlers(t *testing.T) {
 	h := NewHandlers(nil, nil, nil, nil)
-	
+
 	if h == nil {
 		t.Error("Expected non-nil handlers")
 	}
