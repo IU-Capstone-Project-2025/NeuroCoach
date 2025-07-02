@@ -136,10 +136,10 @@ func (m *MongoDBRepository) GetUserProgress(ctx context.Context, userID int) (*m
 	err := m.progressCollection.FindOne(ctx, bson.M{"user_id": userID}).Decode(&progress)
 	if err == mongo.ErrNoDocuments {
 		return &models.UserProgress{
-			UserID:           userID,
-			TotalWorkouts:    0,
-			ConsecutiveDays:  0,
-			Level:            "Beginner",
+			UserID:            userID,
+			TotalWorkouts:     0,
+			ConsecutiveDays:   0,
+			Level:             "Beginner",
 			CompletedWorkouts: []string{},
 		}, nil
 	}
@@ -168,16 +168,16 @@ func (m *MongoDBRepository) updateUserProgress(ctx context.Context, userID int, 
 	level := m.calculateLevel(int(totalWorkouts))
 
 	now := time.Now()
-	
+
 	// Get existing progress to append workout name
 	var existingProgress models.UserProgress
 	completedWorkouts := []string{}
-	
+
 	err = m.progressCollection.FindOne(ctx, bson.M{"user_id": userID}).Decode(&existingProgress)
 	if err == nil {
 		completedWorkouts = existingProgress.CompletedWorkouts
 	}
-	
+
 	// Add new workout name if not already in list
 	if workoutName != "" {
 		found := false
@@ -191,15 +191,15 @@ func (m *MongoDBRepository) updateUserProgress(ctx context.Context, userID int, 
 			completedWorkouts = append(completedWorkouts, workoutName)
 		}
 	}
-	
+
 	progress := &models.UserProgress{
-		UserID:           userID,
-		TotalWorkouts:    int(totalWorkouts),
-		ConsecutiveDays:  consecutiveDays,
-		Level:            level,
+		UserID:            userID,
+		TotalWorkouts:     int(totalWorkouts),
+		ConsecutiveDays:   consecutiveDays,
+		Level:             level,
 		CompletedWorkouts: completedWorkouts,
-		LastWorkoutDate:  now,
-		UpdatedAt:        now,
+		LastWorkoutDate:   now,
+		UpdatedAt:         now,
 	}
 
 	_, err = m.progressCollection.UpdateOne(

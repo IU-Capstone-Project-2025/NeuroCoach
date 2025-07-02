@@ -27,8 +27,8 @@ func (s *ProfileService) SaveProfile(ctx context.Context, profile models.Fitness
 	profile.UserID = userID
 	if err := s.Repo.SaveFitnessProfile(ctx, userID, &profile); err != nil {
 		return NewServiceError(
-			http.StatusInternalServerError, 
-			"Failed to save profile", 
+			http.StatusInternalServerError,
+			"Failed to save profile",
 			err,
 		)
 	}
@@ -45,14 +45,14 @@ func (s *ProfileService) GetProfile(ctx context.Context) (*models.FitnessProfile
 	if err != nil {
 		if err == repository.ErrNotFound {
 			return nil, NewServiceError(
-				http.StatusNotFound, 
-				"Profile not found", 
+				http.StatusNotFound,
+				"Profile not found",
 				err,
 			)
 		}
 		return nil, NewServiceError(
-			http.StatusInternalServerError, 
-			"Failed to get profile", 
+			http.StatusInternalServerError,
+			"Failed to get profile",
 			err,
 		)
 	}
