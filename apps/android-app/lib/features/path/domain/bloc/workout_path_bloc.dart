@@ -1,4 +1,4 @@
-import 'package:android_app/features/path/domain/entities/WorkoutEntity.dart';
+import 'package:android_app/features/path/domain/entities/workout_entity.dart';
 import 'package:android_app/features/path/domain/repositories/workout_path_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

@@ -1,4 +1,4 @@
-import 'package:android_app/features/path/domain/entities/WorkoutEntity.dart';
+import 'package:android_app/features/path/domain/entities/workout_entity.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
