@@ -170,6 +170,11 @@ IMPORTANT: Create EXACTLY %d different workouts in the workouts array.`, workout
 		}
 	}
 
+	// Trim workouts to required count
+	if len(generatedData.Workouts) > workoutsPerWeek {
+		generatedData.Workouts = generatedData.Workouts[:workoutsPerWeek]
+	}
+
 	// Create full workout plan
 	now := time.Now()
 	workoutPlan := &models.WorkoutPlan{
@@ -189,9 +194,23 @@ IMPORTANT: Create EXACTLY %d different workouts in the workouts array.`, workout
 	// Replace workouts with full schedule
 	workoutPlan.Workouts = fullSchedule
 
-	// Save the generated plan
+	// Save both short and full plans
+	shortPlan := &models.ShortWorkoutPlan{
+		UserID:          userID,
+		Title:           generatedData.Title,
+		BaseWorkouts:    generatedData.Workouts,
+		Timeframe:       profile.Timeframe,
+		WorkoutsPerWeek: workoutsPerWeek,
+		Status:          true,
+		CreatedAt:       now,
+		UpdatedAt:       now,
+	}
+	
+	if err := s.MongoDBRepo.SaveShortPlan(ctx, shortPlan); err != nil {
+		fmt.Printf("Failed to save short plan: %v\n", err)
+	}
+	
 	if err := s.MongoDBRepo.SaveWorkoutPlan(ctx, workoutPlan); err != nil {
-		// Log error but don't fail the request
 		fmt.Printf("Failed to save workout plan: %v\n", err)
 	}
 
@@ -371,6 +390,14 @@ func (s *AIService) generateWorkoutSchedule(workoutsPerWeek, totalWeeks int) str
 	return fmt.Sprintf("Week 1: %s (pattern repeats for %d weeks)", strings.Join(schedule, ", "), totalWeeks)
 }
 
+func (s *AIService) fixJSONWithAI(ctx context.Context, content, errorMsg string) (string, error) {
+	messages := []OpenRouterMessage{
+		{Role: "system", Content: "Fix this JSON to be valid. Return only the corrected JSON without any additional comments."},
+		{Role: "user", Content: fmt.Sprintf("Error: %s\nJSON: %s\nFix this JSON", errorMsg, content)},
+	}
+	return s.Client.CreateChatCompletion(ctx, messages, false)
+}
+
 func (s *AIService) createFallbackWorkouts(count int) []models.Workout {
 	workouts := []models.Workout{
 		{Name: "Upper Body", Description: "Chest, back, shoulders", Status: "planned", Exercises: []models.Exercise{{Name: "Push-ups", MuscleGroup: "Chest", Sets: 3, Reps: 12, RestSec: 60}}},
@@ -467,8 +494,8 @@ func (s *AIService) RegenerateWorkoutPlan(ctx context.Context, userComments stri
 		)
 	}
 
-	// Получаем текущий план
-	currentPlan, err := s.MongoDBRepo.GetWorkoutPlan(ctx, userID)
+	// Получаем короткий план для контекста
+	currentShortPlan, err := s.MongoDBRepo.GetShortPlan(ctx, userID)
 	if err != nil {
 		return nil, NewServiceError(
 			http.StatusNotFound,
@@ -497,7 +524,9 @@ func (s *AIService) RegenerateWorkoutPlan(ctx context.Context, userComments stri
 	}
 
 	// Подготавливаем системное сообщение
-	systemContent := fmt.Sprintf(`You are a fitness expert updating workout plans. Create EXACTLY %d workouts and respond with ONLY valid JSON.
+	systemContent := fmt.Sprintf(`You are a fitness expert. You MUST follow user feedback exactly. Create EXACTLY %d workouts and respond with ONLY valid JSON.
+
+CRITICAL: User feedback in the prompt is MANDATORY and must be implemented precisely. Do not ignore any user requirements.
 
 JSON structure:
 {
@@ -522,10 +551,22 @@ JSON structure:
   ]
 }
 
-IMPORTANT: Create EXACTLY %d different workouts in the workouts array. Respond with ONLY JSON with workouts, do not add any additional comments`, workoutsPerWeek, workoutsPerWeek)
+IMPORTANT: Create EXACTLY %d different workouts. Follow ALL user requirements from the prompt.`, workoutsPerWeek, workoutsPerWeek)
 
-	// Подготавливаем промпт с текущим планом и комментариями
-	userPrompt := s.formatRegeneratePrompt(profile, currentPlan, userComments, workoutsPerWeek)
+	// Подготавливаем промпт с коротким планом и комментариями
+	if currentShortPlan == nil {
+		currentShortPlan = &models.ShortWorkoutPlan{
+			UserID:          userID,
+			Title:           "Basic Workout Plan",
+			BaseWorkouts:    s.createFallbackWorkouts(workoutsPerWeek),
+			Timeframe:       profile.Timeframe,
+			WorkoutsPerWeek: workoutsPerWeek,
+			Status:          true,
+			CreatedAt:       time.Now(),
+			UpdatedAt:       time.Now(),
+		}
+	}
+	userPrompt := s.formatRegeneratePrompt(profile, currentShortPlan, userComments, workoutsPerWeek)
 
 	// Подготавливаем сообщения для OpenRouter
 	messages := []OpenRouterMessage{
@@ -534,14 +575,17 @@ IMPORTANT: Create EXACTLY %d different workouts in the workouts array. Respond w
 	}
 
 	// Вызываем ИИ
+	fmt.Printf("Starting AI request...\n")
 	content, err := s.Client.CreateChatCompletion(ctx, messages, true)
 	if err != nil {
+		fmt.Printf("AI request failed: %v\n", err)
 		return nil, NewServiceError(
 			http.StatusInternalServerError,
 			"AI request failed",
 			err,
 		)
 	}
+	fmt.Printf("AI request completed\n")
 
 	// Log raw response for debugging
 	fmt.Printf("Raw AI response: %s\n", content)
@@ -565,11 +609,22 @@ IMPORTANT: Create EXACTLY %d different workouts in the workouts array. Respond w
 	}
 
 	if err := json.Unmarshal([]byte(cleanContent), &generatedData); err != nil {
-		return nil, NewServiceError(
-			http.StatusInternalServerError,
-			"Failed to parse AI response",
-			fmt.Errorf("JSON parse error: %v, cleaned content: %s", err, cleanContent),
-		)
+		res, err := s.fixJSONWithAI(ctx, cleanContent, err.Error())
+		fmt.Printf("%s", res)
+		if err != nil {
+			return nil, NewServiceError(
+				http.StatusInternalServerError,
+				"Failed to parse AI response",
+				fmt.Errorf("JSON parse error: %v, cleaned content: %s", err, cleanContent),
+			)
+		}
+		if err := json.Unmarshal([]byte(res), &generatedData); err != nil {
+			return nil, NewServiceError(
+				http.StatusInternalServerError,
+				"Failed to parse AI response",
+				fmt.Errorf("JSON parse error: %v, cleaned content: %s", err, cleanContent),
+			)
+		} 
 	}
 
 	// Заполняем отсутствующие поля значениями по умолчанию
@@ -584,15 +639,24 @@ IMPORTANT: Create EXACTLY %d different workouts in the workouts array. Respond w
 		}
 	}
 
-	// Создаем обновленный план
+	// Обновляем короткий план
 	now := time.Now()
+	currentShortPlan.Title = generatedData.Title
+	currentShortPlan.BaseWorkouts = generatedData.Workouts
+	currentShortPlan.UpdatedAt = now
+	
+	// Сохраняем обновленный короткий план
+	if err := s.MongoDBRepo.SaveShortPlan(ctx, currentShortPlan); err != nil {
+		fmt.Printf("Failed to save updated short plan: %v\n", err)
+	}
+	
+	// Создаем полный план
 	updatedPlan := &models.WorkoutPlan{
-		ID:        currentPlan.ID, // Сохраняем ID существующего плана
 		UserID:    userID,
 		Title:     generatedData.Title,
 		Workouts:  generatedData.Workouts,
 		Status:    true,
-		CreatedAt: currentPlan.CreatedAt, // Сохраняем дату создания
+		CreatedAt: now,
 		UpdatedAt: now,
 	}
 
@@ -659,7 +723,7 @@ func (s *AIService) GetUserProgress(ctx context.Context) (*models.UserProgress, 
 	return s.MongoDBRepo.GetUserProgress(ctx, userID)
 }
 
-func (s *AIService) formatRegeneratePrompt(profile *models.FitnessProfile, currentPlan *models.WorkoutPlan, userComments string, requiredWorkouts int) string {
+func (s *AIService) formatRegeneratePrompt(profile *models.FitnessProfile, currentShortPlan *models.ShortWorkoutPlan, userComments string, requiredWorkouts int) string {
 	var sb strings.Builder
 
 	sb.WriteString("Update the existing workout plan based on user feedback.\n\n")
@@ -677,18 +741,21 @@ func (s *AIService) formatRegeneratePrompt(profile *models.FitnessProfile, curre
 		sb.WriteString("\n")
 	}
 
-	sb.WriteString("\nCurrent Workout Plan:\n")
-	fmt.Fprintf(&sb, "Title: %s\n", currentPlan.Title)
-	for i, workout := range currentPlan.Workouts {
+	sb.WriteString("\nCurrent Base Workouts:\n")
+	fmt.Fprintf(&sb, "Title: %s\n", currentShortPlan.Title)
+	for i, workout := range currentShortPlan.BaseWorkouts {
 		fmt.Fprintf(&sb, "Workout %d: %s - %s\n", i+1, workout.Name, workout.Description)
 		for j, exercise := range workout.Exercises {
-			fmt.Fprintf(&sb, "  Exercise %d: %s (%s) - %d sets x %d reps, %d sec rest\n",
-				j+1, exercise.Name, exercise.MuscleGroup, exercise.Sets, exercise.Reps, exercise.RestSec)
+			fmt.Fprintf(&sb, "  Exercise %d: %s (%s) - %d sets x %d reps\n",
+				j+1, exercise.Name, exercise.MuscleGroup, exercise.Sets, exercise.Reps)
 		}
 	}
 
-	sb.WriteString("\nUser Comments/Feedback:\n")
+	sb.WriteString("\n\n=== CRITICAL USER REQUIREMENTS ===\n")
+	sb.WriteString("MUST FOLLOW THESE COMMENTS EXACTLY:\n")
 	sb.WriteString(userComments)
+	sb.WriteString("\n=== END CRITICAL REQUIREMENTS ===\n\n")
+	sb.WriteString("The above user comments are MANDATORY and must be implemented precisely.\n")
 
 	// Add timeframe-specific guidance
 	sb.WriteString("\n")

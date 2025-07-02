@@ -37,6 +37,10 @@ type MongoDBRep interface {
 	GetWorkoutPlan(ctx context.Context, userID int) (*models.WorkoutPlan, error)
 	GetWorkoutByID(ctx context.Context, userID int, workoutID string) (*models.Workout, error)
 
+	// Short plan operations
+	SaveShortPlan(ctx context.Context, plan *models.ShortWorkoutPlan) error
+	GetShortPlan(ctx context.Context, userID int) (*models.ShortWorkoutPlan, error)
+
 	// Progress operations
 	CompleteWorkout(ctx context.Context, userID int, workoutID string) error
 	GetUserProgress(ctx context.Context, userID int) (*models.UserProgress, error)

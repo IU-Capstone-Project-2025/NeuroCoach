@@ -16,6 +16,7 @@ import (
 type MongoDBRepository struct {
 	chatCollection       *mongo.Collection
 	workoutCollection    *mongo.Collection
+	shortPlanCollection  *mongo.Collection
 	completionCollection *mongo.Collection
 	progressCollection   *mongo.Collection
 }
@@ -40,6 +41,7 @@ func NewMongoDBRepository(uri, dbName string) (MongoDBRep, error) {
 	return &MongoDBRepository{
 		chatCollection:       db.Collection("chat_messages"),
 		workoutCollection:    db.Collection("workout_plans"),
+		shortPlanCollection:  db.Collection("short_plans"),
 		completionCollection: db.Collection("workout_completions"),
 		progressCollection:   db.Collection("user_progress"),
 	}, nil
@@ -94,6 +96,25 @@ func (m *MongoDBRepository) GetWorkoutPlan(ctx context.Context, userID int) (*mo
 	m.updateExpiredWorkouts(ctx, &plan)
 
 	return &plan, nil
+}
+
+func (m *MongoDBRepository) SaveShortPlan(ctx context.Context, plan *models.ShortWorkoutPlan) error {
+	_, err := m.shortPlanCollection.UpdateOne(
+		ctx,
+		bson.M{"user_id": plan.UserID},
+		bson.M{"$set": plan},
+		options.Update().SetUpsert(true),
+	)
+	return err
+}
+
+func (m *MongoDBRepository) GetShortPlan(ctx context.Context, userID int) (*models.ShortWorkoutPlan, error) {
+	var plan models.ShortWorkoutPlan
+	err := m.shortPlanCollection.FindOne(ctx, bson.M{"user_id": userID}).Decode(&plan)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
+	return &plan, err
 }
 
 func (m *MongoDBRepository) updateExpiredWorkouts(ctx context.Context, plan *models.WorkoutPlan) {
