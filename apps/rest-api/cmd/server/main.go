@@ -77,15 +77,16 @@ func main() {
 		authRouter.HandleFunc("/regenerate-plan", h.RegenerateWorkoutPlan).Methods("POST")
 		authRouter.HandleFunc("/complete-workout", h.CompleteWorkout).Methods("POST")
 		authRouter.HandleFunc("/progress", h.GetUserProgress).Methods("GET")
+		authRouter.HandleFunc("/motivation", h.GetMotivationalMessage).Methods("GET")
 	}
 
 	// Start server
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
 		Handler:      r,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 300 * time.Second,
+		IdleTimeout:  180 * time.Second,
 	}
 
 	// Graceful shutdown

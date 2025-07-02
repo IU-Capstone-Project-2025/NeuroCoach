@@ -42,3 +42,13 @@ func (h *Handlers) RegenerateWorkoutPlan(w http.ResponseWriter, r *http.Request)
 
 	respondWithJSON(w, http.StatusOK, plan)
 }
+
+func (h *Handlers) GetMotivationalMessage(w http.ResponseWriter, r *http.Request) {
+	message, err := h.AIService.GenerateMotivationalMessage(r.Context())
+	if err != nil {
+		handleServiceError(w, err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]string{"message": message})
+}
