@@ -44,4 +44,5 @@ type MongoDBRep interface {
 	// Progress operations
 	CompleteWorkout(ctx context.Context, userID int, workoutID string) error
 	GetUserProgress(ctx context.Context, userID int) (*models.UserProgress, error)
+	GetRating(ctx context.Context) ([]models.UserRating, error)
 }

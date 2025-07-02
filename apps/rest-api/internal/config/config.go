@@ -31,7 +31,7 @@ func Load() (*Config, error) {
 		DatabaseURL:   getEnv("DATABASE_URL", "postgres://postgres:postgres@localhost:5432/fitness_ai?sslmode=disable"),
 		JWTSecret:     getEnv("JWT_SECRET", "default-secret-change-me"),
 		JWTExpiration: parseDuration(getEnv("JWT_EXPIRATION", "24h")),
-		OpenRouterKey: getEnv("OPENROUTER_KEY", "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"),
+		OpenRouterKey: getEnv("OPENROUTER_KEY", "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"),
 		MongoURI:      getEnv("MONGOURI", "mongodb://localhost:27017/fitness_ai"),
 		MongoDBName:   getEnv("MONGODBNAME", "fitness_ai"),
 		SkipDatabase:  getEnv("SKIP_DATABASE", "") != "",

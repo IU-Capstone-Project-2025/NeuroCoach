@@ -723,6 +723,11 @@ func (s *AIService) GetUserProgress(ctx context.Context) (*models.UserProgress, 
 	return s.MongoDBRepo.GetUserProgress(ctx, userID)
 }
 
+
+func (s *AIService) GetRating(ctx context.Context) ([]models.UserRating, error) {
+	return s.MongoDBRepo.GetRating(ctx)
+}
+
 func (s *AIService) GenerateMotivationalMessage(ctx context.Context) (string, error) {
 	userID, err := s.GetUserIDFromContext(ctx)
 	if err != nil {
