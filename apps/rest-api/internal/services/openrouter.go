@@ -17,12 +17,12 @@ const (
 	siteTitle         = "NeuroCoach"
 )
 
-// Список доступных моделей с приоритетами
+// List of available models with priorities
 var availableModels = []string{
-	"mistralai/mistral-7b-instruct:free",      // Самый стабильный
-	"google/gemma-7b-it:free",                 // От Google
-	"openchat/openchat-7b:free",               // Оптимизирован для чата
-	"anthropic/claude-3-haiku:free",           // Claude 3 (самая мощная из бесплатных)
+	"mistralai/mistral-7b-instruct:free",      // Most stable
+	"google/gemma-7b-it:free",                 // From Google
+	"openchat/openchat-7b:free",               // Optimized for chat
+	"anthropic/claude-3-haiku:free",           // Claude 3 (most powerful free model)
 	"meta-llama/llama-3-8b-instruct:free",     // LLaMA 3
 	"nousresearch/nous-hermes-2-mixtral:free", // Mixtral
 	"microsoft/phi-3-mini-128k-instruct:free", // Phi-3
@@ -61,7 +61,7 @@ func NewOpenRouterClient(apiKey string) *OpenRouterClient {
 	return &OpenRouterClient{
 		apiKey: apiKey,
 		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout: 90 * time.Second,
 		},
 		currentModelIndex: 0,
 	}
@@ -88,7 +88,7 @@ func (c *OpenRouterClient) CreateChatCompletion(ctx context.Context, messages []
 	var response string
 	var err error
 	attempts := 0
-	maxAttempts := len(availableModels) * 2 // Максимум 2 круга по всем моделям
+	maxAttempts := len(availableModels) * 2 // Maximum 2 rounds through all models
 
 	for attempts = 0; attempts < maxAttempts; attempts++ {
 		response, err = c.sendRequest(ctx, messages, requireJSON)
@@ -96,12 +96,12 @@ func (c *OpenRouterClient) CreateChatCompletion(ctx context.Context, messages []
 			break
 		}
 
-		// Пробуем следующую модель при ошибке
+		// Try next model on error
 		if c.isModelError(err) {
 			c.switchToNextModel()
 		}
 
-		// Небольшая задержка перед повторной попыткой
+		// Small delay before retry
 		time.Sleep(1 * time.Second)
 	}
 
@@ -109,7 +109,7 @@ func (c *OpenRouterClient) CreateChatCompletion(ctx context.Context, messages []
 }
 
 func (c *OpenRouterClient) sendRequest(ctx context.Context, messages []OpenRouterMessage, requireJSON bool) (string, error) {
-	// Если требуется JSON ответ, добавляем инструкцию в системное сообщение
+	// If JSON response is required, add instruction to system message
 	if requireJSON && len(messages) > 0 && messages[0].Role == "system" {
 		messages[0].Content += "\n\nIMPORTANT: Respond ONLY with valid JSON. Do not include any explanation or additional text."
 	}
@@ -142,7 +142,7 @@ func (c *OpenRouterClient) sendRequest(ctx context.Context, messages []OpenRoute
 
 	body, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode != http.StatusOK {
-		// Пытаемся распарсить ошибку
+		// Try to parse error
 		var errorResp struct {
 			Error struct {
 				Message string `json:"message"`

@@ -62,7 +62,7 @@ func (r *PostgresRepository) SaveFitnessProfile(ctx context.Context, userID int,
 	if err != nil {
 		return fmt.Errorf("error starting transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() { _ = tx.Rollback(ctx) }()
 
 	// Upsert fitness profile
 	_, err = tx.Exec(ctx,
