@@ -24,7 +24,12 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.23'
-        
+      
+      - name: Tidy and download dependencies
+        run: |
+          go mod tidy
+          go mod download
+      
       - name: Run linter
         run: make lint
       
