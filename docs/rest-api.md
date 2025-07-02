@@ -314,6 +314,32 @@ Authorization: Bearer <token>
 }
 ```
 
+#### Get Rating
+Retrieve user rating leaderboard sorted by score.
+
+```http
+GET /api/rating
+Authorization: Bearer <token>
+```
+
+**Response** (200 OK)
+```json
+[
+  {
+    "user_id": 1,
+    "total_workouts": 25,
+    "max_consecutive": 7,
+    "score": 32
+  },
+  {
+    "user_id": 2,
+    "total_workouts": 15,
+    "max_consecutive": 5,
+    "score": 20
+  }
+]
+```
+
 ## Data Models
 
 ### Fitness Profile
@@ -380,6 +406,14 @@ Authorization: Bearer <token>
 | completed_workouts | string[] | Names of completed workouts |
 | last_workout_date | string | Last workout timestamp |
 | updated_at | string | Update timestamp |
+
+### User Rating
+| Field | Type | Description |
+|-------|------|-------------|
+| user_id | integer | User ID |
+| total_workouts | integer | Total completed workouts |
+| max_consecutive | integer | Max consecutive workout days |
+| score | integer | Total score (total_workouts + max_consecutive) |
 
 ### Level System
 - **Beginner**: 0-4 completed workouts

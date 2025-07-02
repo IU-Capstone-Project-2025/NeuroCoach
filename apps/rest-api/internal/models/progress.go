@@ -27,3 +27,10 @@ type UserProgress struct {
 type CompleteWorkoutRequest struct {
 	WorkoutID string `json:"workout_id" validate:"required"`
 }
+
+type UserRating struct {
+	UserID          int `json:"user_id"`
+	TotalWorkouts   int `json:"total_workouts"`
+	MaxConsecutive  int `json:"max_consecutive"`
+	Score           int `json:"score"`
+}

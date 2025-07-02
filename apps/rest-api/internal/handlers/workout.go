@@ -42,3 +42,13 @@ func (h *Handlers) RegenerateWorkoutPlan(w http.ResponseWriter, r *http.Request)
 
 	respondWithJSON(w, http.StatusOK, plan)
 }
+
+func (h *Handlers) GetRating(w http.ResponseWriter, r *http.Request) {
+	rating, err := h.AIService.GetRating(r.Context())
+	if err != nil {
+		handleServiceError(w, err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, rating)
+}

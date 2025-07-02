@@ -507,6 +507,10 @@ func (s *AIService) GetUserProgress(ctx context.Context) (*models.UserProgress, 
 	return s.MongoDBRepo.GetUserProgress(ctx, userID)
 }
 
+func (s *AIService) GetRating(ctx context.Context) ([]models.UserRating, error) {
+	return s.MongoDBRepo.GetRating(ctx)
+}
+
 func (s *AIService) formatRegeneratePrompt(profile *models.FitnessProfile, currentPlan *models.WorkoutPlan, userComments string) string {
 	var sb strings.Builder
 

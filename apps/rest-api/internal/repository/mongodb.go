@@ -258,3 +258,105 @@ func (m *MongoDBRepository) calculateLevel(totalWorkouts int) string {
 	}
 	return "Beginner"
 }
+
+func (m *MongoDBRepository) GetRating(ctx context.Context) ([]models.UserRating, error) {
+	cursor, err := m.progressCollection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var ratings []models.UserRating
+	for cursor.Next(ctx) {
+		var progress models.UserProgress
+		if err := cursor.Decode(&progress); err != nil {
+			continue
+		}
+
+		// Получаем максимальное количество дней подряд для пользователя
+		maxConsecutive := m.getMaxConsecutiveDays(ctx, progress.UserID)
+
+		rating := models.UserRating{
+			UserID:         progress.UserID,
+			TotalWorkouts:  progress.TotalWorkouts,
+			MaxConsecutive: maxConsecutive,
+			Score:          progress.TotalWorkouts + maxConsecutive,
+		}
+		ratings = append(ratings, rating)
+	}
+
+	// Сортируем по очкам по убыванию
+	for i := 0; i < len(ratings)-1; i++ {
+		for j := i + 1; j < len(ratings); j++ {
+			if ratings[i].Score < ratings[j].Score {
+				ratings[i], ratings[j] = ratings[j], ratings[i]
+			}
+		}
+	}
+
+	return ratings, nil
+}
+
+func (m *MongoDBRepository) getMaxConsecutiveDays(ctx context.Context, userID int) int {
+	cursor, err := m.completionCollection.Find(
+		ctx,
+		bson.M{"user_id": userID},
+		options.Find().SetSort(bson.M{"completed_at": 1}),
+	)
+	if err != nil {
+		return 0
+	}
+	defer cursor.Close(ctx)
+
+	var completions []models.WorkoutCompletion
+	if err := cursor.All(ctx, &completions); err != nil {
+		return 0
+	}
+
+	if len(completions) == 0 {
+		return 0
+	}
+
+	// Группируем тренировки по дням
+	daysMap := make(map[string]bool)
+	for _, completion := range completions {
+		dayKey := completion.CompletedAt.Format("2006-01-02")
+		daysMap[dayKey] = true
+	}
+
+	// Преобразуем в отсортированный слайс дат
+	var days []time.Time
+	for dayKey := range daysMap {
+		day, _ := time.Parse("2006-01-02", dayKey)
+		days = append(days, day)
+	}
+
+	if len(days) == 0 {
+		return 0
+	}
+
+	// Сортируем даты
+	for i := 0; i < len(days)-1; i++ {
+		for j := i + 1; j < len(days); j++ {
+			if days[i].After(days[j]) {
+				days[i], days[j] = days[j], days[i]
+			}
+		}
+	}
+
+	maxConsecutive := 1
+	currentConsecutive := 1
+
+	for i := 1; i < len(days); i++ {
+		if days[i].Sub(days[i-1]) == 24*time.Hour {
+			currentConsecutive++
+			if currentConsecutive > maxConsecutive {
+				maxConsecutive = currentConsecutive
+			}
+		} else {
+			currentConsecutive = 1
+		}
+	}
+
+	return maxConsecutive
+}
