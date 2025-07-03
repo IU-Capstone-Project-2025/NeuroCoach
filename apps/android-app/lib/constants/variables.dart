@@ -1,5 +1,3 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
-// class AppVariables {
-//   static String baseUrl = dotenv.env['API_BASE_URL']!;
-// }
+class AppVariables {
+  static String baseUrl = String.fromEnvironment('BASE_URL', defaultValue: 'http://api.blazz1t.online');
+}

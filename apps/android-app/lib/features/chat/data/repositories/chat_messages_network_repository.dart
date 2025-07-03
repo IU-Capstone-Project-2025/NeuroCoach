@@ -4,9 +4,13 @@ import 'package:android_app/features/chat/domain/repositories/chat_messages_repo
 import 'package:flutter/foundation.dart';
 
 class ChatMessagesNetworkRepository extends ChatMessagesRepository {
+  final NetworkService networkService;
+  ChatMessagesNetworkRepository({NetworkService? networkService})
+      : networkService = networkService ?? NetworkService();
+
   @override
   Future<List<ChatMessage>> fetchMessages() async {
-    final response = await NetworkService().request(
+    final response = await networkService.request(
       method: 'GET',
       path: '/api/chat/history',
     );
@@ -24,7 +28,7 @@ class ChatMessagesNetworkRepository extends ChatMessagesRepository {
 
   @override
   Future<String> sendMessage(String message) async {
-    final response = await NetworkService().request(
+    final response = await networkService.request(
       method: 'POST',
       path: '/api/chat',
       body: {'message': message},

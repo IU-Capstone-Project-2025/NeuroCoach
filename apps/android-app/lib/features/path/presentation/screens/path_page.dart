@@ -1,7 +1,7 @@
 import 'package:android_app/constants/app_colors.dart';
 import 'package:android_app/constants/app_text_styles.dart';
 import 'package:android_app/features/path/domain/bloc/workout_path_bloc.dart';
-import 'package:android_app/features/path/domain/entities/WorkoutEntity.dart';
+import 'package:android_app/features/path/domain/entities/workout_entity.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

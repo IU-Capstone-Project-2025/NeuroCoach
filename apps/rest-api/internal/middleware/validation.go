@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
 	"rest-api/internal/models"
+
+	"github.com/go-playground/validator/v10"
 )
 
 var validate = validator.New()
@@ -34,7 +35,7 @@ func ValidateRequest[T any](next func(http.ResponseWriter, *http.Request, T)) ht
 
 func respondWithError(w http.ResponseWriter, code int, message string) {
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(models.ErrorResponse{
+	_ = json.NewEncoder(w).Encode(models.ErrorResponse{
 		Error:   http.StatusText(code),
 		Message: message,
 	})
@@ -42,7 +43,7 @@ func respondWithError(w http.ResponseWriter, code int, message string) {
 
 func respondWithValidationError(w http.ResponseWriter, errors map[string]string) {
 	w.WriteHeader(http.StatusBadRequest)
-	json.NewEncoder(w).Encode(models.ErrorResponse{
+	_ = json.NewEncoder(w).Encode(models.ErrorResponse{
 		Error:   "Validation failed",
 		Message: "Invalid request parameters",
 	})
