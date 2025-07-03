@@ -38,12 +38,25 @@ type WorkoutPlan struct {
 	Workouts  []Workout          `bson:"workouts" json:"workouts"`
 }
 
+type ShortWorkoutPlan struct {
+	ID              primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	UserID          int                `bson:"user_id" json:"user_id"`
+	CreatedAt       time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt       time.Time          `bson:"updated_at" json:"updated_at"`
+	Status          bool               `bson:"status" json:"status"`
+	Title           string             `bson:"title" json:"title"`
+	BaseWorkouts    []Workout          `bson:"base_workouts" json:"base_workouts"`
+	Timeframe       string             `bson:"timeframe" json:"timeframe"`
+	WorkoutsPerWeek int                `bson:"workouts_per_week" json:"workouts_per_week"`
+}
+
 type Workout struct {
-	WorkoutID   primitive.ObjectID `bson:"workout_id,omitempty" json:"workout_id"`
-	Name        string             `bson:"name" json:"name"`
-	Description string             `bson:"description,omitempty" json:"description,omitempty"`
-	Status      string             `bson:"status" json:"status"`
-	Exercises   []Exercise         `bson:"exercises" json:"exercises"`
+	WorkoutID     primitive.ObjectID `bson:"workout_id,omitempty" json:"workout_id"`
+	Name          string             `bson:"name" json:"name"`
+	Description   string             `bson:"description,omitempty" json:"description,omitempty"`
+	Status        string             `bson:"status" json:"status"`
+	ScheduledDate time.Time          `bson:"scheduled_date" json:"scheduled_date"`
+	Exercises     []Exercise         `bson:"exercises" json:"exercises"`
 }
 
 type Exercise struct {

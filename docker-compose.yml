@@ -53,7 +53,7 @@ services:
   mongo:
     image: mongo:4.4
     environment:
-      - MONGO_INIT_DB_DATABASE=fitness_ai
+      - MONGO_INITDB_DATABASE=fitness_ai
     volumes:
       - mongo_data:/data/db
     networks:

@@ -13,7 +13,7 @@ func (h *Handlers) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: Add other health checks (e.g., AI service status)
-	
+
 	respondWithJSON(w, http.StatusOK, models.HealthCheckResponse{
 		Status:  "healthy",
 		Version: "1.0",

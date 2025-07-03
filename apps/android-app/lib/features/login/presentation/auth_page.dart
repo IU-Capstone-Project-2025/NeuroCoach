@@ -1,9 +1,9 @@
 import 'package:android_app/app/app_router.dart';
+import 'package:android_app/app/presentation/scopes/app_config_scope_container.dart';
 import 'package:android_app/app/presentation/scopes/dependencies_scope.dart';
 import 'package:android_app/features/login/domain/bloc/sign_up_bloc.dart';
 import 'package:android_app/features/login/presentation/components/login_page_contents.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -37,17 +37,14 @@ class AuthPage extends StatelessWidget {
           BlocListener<LoginBloc, LoginState>(
             listener: (context, state) {
               if (state is LoginStateLoaded) {
+                AppConfigScopeContainer.of(context).updateEmail(state.email);
                 context.router.replace(HomeRoute());
               } else if (state is LoginStateError) {
-                if (!kDebugMode) {
-                  context.router.push(HomeRoute());
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Error logging in')),
                   );
-                  context.read<LoginBloc>().add(LoginEventReset());
-                  context.read<SignUpBloc>().add(SignUpEventReset());
-                }
+                context.read<LoginBloc>().add(LoginEventReset());
+                context.read<SignUpBloc>().add(SignUpEventReset());
               } else if (state is LoginStateInitial) {
                 context.router.replace(AuthRoute(isSignUp: false));
               }

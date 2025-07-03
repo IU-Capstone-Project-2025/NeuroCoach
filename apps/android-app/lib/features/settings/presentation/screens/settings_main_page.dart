@@ -27,6 +27,7 @@ class SettingsMainPage extends StatelessWidget {
         child: Column(
           children: [
             GestureDetector(
+              key: const Key('profile_tile'),
               onTap: () => context.router.push(const ProfileRoute()),
               child: Container(
                 decoration: BoxDecoration(

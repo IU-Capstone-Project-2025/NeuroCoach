@@ -35,7 +35,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       if (token.isNotEmpty) {
         _rememberMeRepository.rememberUser(jwtToken: token, email: event.email);
       }
-      emit(const LoginStateLoaded());
+      emit(LoginStateLoaded(email: event.email));
     } on Object catch (e, s) {
       if (kDebugMode) print('$e, $s');
       emit(const LoginStateError());
@@ -65,7 +65,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       if (token.isNotEmpty) {
         _rememberMeRepository.rememberUser(jwtToken: token, email: event.email);
       }
-      emit(const LoginStateLoaded());
+      emit(LoginStateLoaded(email: event.email));
     } on Object catch (e, s) {
       if (kDebugMode) print('$e, $s');
       emit(LoginStateError());
@@ -134,7 +134,9 @@ class LoginStateLoading extends LoginState {
 }
 
 class LoginStateLoaded extends LoginState {
-  const LoginStateLoaded();
+  final String email;
+
+  const LoginStateLoaded({required this.email});
 }
 
 class LoginStateError extends LoginState {

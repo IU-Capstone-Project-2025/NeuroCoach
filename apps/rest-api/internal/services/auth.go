@@ -3,8 +3,8 @@ package services
 import (
 	"context"
 	"errors"
-	"time"
 	"net/http"
+	"time"
 
 	"rest-api/internal/models"
 	"rest-api/internal/repository"
@@ -13,8 +13,8 @@ import (
 
 type AuthService struct {
 	BaseService
-	JWTSecret   string
-	JWTExpiry   time.Duration
+	JWTSecret string
+	JWTExpiry time.Duration
 }
 
 func NewAuthService(repo repository.Repository, jwtSecret string, jwtExpiry time.Duration) *AuthService {
@@ -30,15 +30,15 @@ func (s *AuthService) Register(ctx context.Context, req models.RegisterRequest) 
 	existing, err := s.Repo.GetUserByEmail(ctx, req.Email)
 	if err != nil && !errors.Is(err, repository.ErrNotFound) {
 		return nil, NewServiceError(
-			http.StatusInternalServerError, 
-			"Failed to check existing user", 
+			http.StatusInternalServerError,
+			"Failed to check existing user",
 			err,
 		)
 	}
 	if existing != nil {
 		return nil, NewServiceError(
-			http.StatusConflict, 
-			"Email already registered", 
+			http.StatusConflict,
+			"Email already registered",
 			nil,
 		)
 	}
@@ -47,8 +47,8 @@ func (s *AuthService) Register(ctx context.Context, req models.RegisterRequest) 
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
 		return nil, NewServiceError(
-			http.StatusInternalServerError, 
-			"Failed to hash password", 
+			http.StatusInternalServerError,
+			"Failed to hash password",
 			err,
 		)
 	}
@@ -57,8 +57,8 @@ func (s *AuthService) Register(ctx context.Context, req models.RegisterRequest) 
 	userID, err := s.Repo.CreateUser(ctx, req.Email, hashedPassword)
 	if err != nil {
 		return nil, NewServiceError(
-			http.StatusInternalServerError, 
-			"Failed to create user", 
+			http.StatusInternalServerError,
+			"Failed to create user",
 			err,
 		)
 	}
@@ -67,8 +67,8 @@ func (s *AuthService) Register(ctx context.Context, req models.RegisterRequest) 
 	token, err := utils.GenerateJWT(userID, req.Email, s.JWTSecret, s.JWTExpiry)
 	if err != nil {
 		return nil, NewServiceError(
-			http.StatusInternalServerError, 
-			"Failed to generate token", 
+			http.StatusInternalServerError,
+			"Failed to generate token",
 			err,
 		)
 	}
@@ -85,14 +85,14 @@ func (s *AuthService) Login(ctx context.Context, req models.LoginRequest) (*mode
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return nil, NewServiceError(
-				http.StatusUnauthorized, 
-				"Invalid credentials", 
+				http.StatusUnauthorized,
+				"Invalid credentials",
 				nil,
 			)
 		}
 		return nil, NewServiceError(
-			http.StatusInternalServerError, 
-			"Failed to retrieve user", 
+			http.StatusInternalServerError,
+			"Failed to retrieve user",
 			err,
 		)
 	}
@@ -100,8 +100,8 @@ func (s *AuthService) Login(ctx context.Context, req models.LoginRequest) (*mode
 	// Compare password
 	if !utils.CheckPasswordHash(req.Password, user.PasswordHash) {
 		return nil, NewServiceError(
-			http.StatusUnauthorized, 
-			"Invalid credentials", 
+			http.StatusUnauthorized,
+			"Invalid credentials",
 			nil,
 		)
 	}
@@ -110,8 +110,8 @@ func (s *AuthService) Login(ctx context.Context, req models.LoginRequest) (*mode
 	token, err := utils.GenerateJWT(user.ID, user.Email, s.JWTSecret, s.JWTExpiry)
 	if err != nil {
 		return nil, NewServiceError(
-			http.StatusInternalServerError, 
-			"Failed to generate token", 
+			http.StatusInternalServerError,
+			"Failed to generate token",
 			err,
 		)
 	}

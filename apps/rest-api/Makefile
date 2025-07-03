@@ -70,6 +70,28 @@ test: ## Run tests
 	@echo "Running tests..."
 	@go test -v ./...
 
+.PHONY: test-unit
+test-unit: ## Run unit tests only
+	@echo "Running unit tests..."
+	@go test -v -short ./...
+
+.PHONY: test-integration
+test-integration: ## Run integration tests
+	@echo "Running integration tests..."
+	@go test -v -run Integration ./...
+
+.PHONY: test-coverage
+test-coverage: ## Run tests with coverage
+	@echo "Running tests with coverage..."
+	@go test -v -coverprofile=coverage.out ./...
+	@go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated: coverage.html"
+
+.PHONY: benchmark
+benchmark: ## Run benchmark tests
+	@echo "Running benchmarks..."
+	@go test -bench=. -benchmem ./...
+
 .PHONY: build
 build: ## Build the application binary
 	@echo "Building application..."
@@ -79,6 +101,7 @@ build: ## Build the application binary
 clean: db-down ## Clean up resources
 	@echo "Cleaning up..."
 	@rm -rf bin/
+	@rm -f coverage.out coverage.html
 
 .PHONY: full-start
 full-start: db-up migrate-up run-api ## Full start: DB, migrations, and API
@@ -99,3 +122,32 @@ mongo-down: ## Stop and remove MongoDB container
 .PHONY: mongo-shell
 mongo-shell: ## Open a shell to the running MongoDB container
 	docker exec -it neurocoach-mongo mongosh -u user -p password --authenticationDatabase admin fitness_ai
+
+.PHONY: test-setup
+test-setup: ## Setup test databases
+	@echo "Setting up test databases..."
+	@docker run --name fitness-ai-test-db -d -p 5433:5432 \
+		-e POSTGRES_DB=fitness_ai_test \
+		-e POSTGRES_USER=postgres \
+		-e POSTGRES_PASSWORD=postgres \
+		postgres:15-alpine || true
+	@docker run --name neurocoach-test-mongo -d -p 27018:27017 \
+		-e MONGO_INITDB_DATABASE=fitness_ai_test \
+		mongo:6.0 || true
+
+.PHONY: test-teardown
+test-teardown: ## Teardown test databases
+	@echo "Tearing down test databases..."
+	@docker stop fitness-ai-test-db neurocoach-test-mongo || true
+	@docker rm fitness-ai-test-db neurocoach-test-mongo || true
+
+.PHONY: lint
+lint: ## Run linter
+	@echo "Running linter..."
+	@golangci-lint run ./... || echo "Install golangci-lint: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"
+
+.PHONY: format
+format: ## Format code
+	@echo "Formatting code..."
+	@go fmt ./...
+	@goimports -w . || echo "Install goimports: go install golang.org/x/tools/cmd/goimports@latest"
