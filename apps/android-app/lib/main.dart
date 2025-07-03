@@ -3,11 +3,10 @@ import 'dart:io';
 import 'package:android_app/app/data/app_config_factory.dart';
 import 'package:android_app/app/dependencies_factory.dart';
 import 'package:android_app/app/domain/entities/app_config.dart';
-import 'package:android_app/app/presentation/scopes/app_config_scope.dart';
+import 'package:android_app/app/presentation/scopes/app_config_scope_container.dart';
 import 'package:android_app/app/presentation/scopes/dependencies_scope.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app_dependencies.dart';
@@ -27,8 +26,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final appRouter = _appRouter;
     final depScope = dependencies;
-    return AppConfigScope(
-      appConfig: config,
+    return AppConfigScopeContainer(
+      initialConfig: config,
       child: DependenciesScope(
         appDependencies: depScope,
         child: MaterialApp.router(
