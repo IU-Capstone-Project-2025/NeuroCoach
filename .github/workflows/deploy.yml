@@ -29,9 +29,13 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       
       - name: Deploy via SSH
+        env:
+          OPENROUTER_KEY: ${{ secrets.OPENROUTER_KEY }}
         run: |
-          ssh -o StrictHostKeyChecking=no blazz1t@blazz1t.online << 'EOF'
+          ssh -o StrictHostKeyChecking=no blazz1t@blazz1t.online << EOF
+          export OPENROUTER_KEY="$OPENROUTER_KEY"
           cd NeuroCoach
+          envsubst < docker-compose.yml > docker-compose.generated.yml
           git pull origin main
           docker-compose down
           docker-compose up --build -d

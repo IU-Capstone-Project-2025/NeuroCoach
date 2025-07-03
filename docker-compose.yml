@@ -14,6 +14,7 @@ services:
     environment:
       - MONGOURI=mongodb://neurocoach-mongo:27017/fitness_ai
       - DATABASE_URL=postgres://postgres:postgres@fitness-ai-db:5432/fitness_ai?sslmode=disable
+      - OPENROUTER_KEY= ${OPENROUTER_KEY}
       - PORT=80
     depends_on:
       - mongo
