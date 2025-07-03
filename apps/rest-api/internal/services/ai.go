@@ -122,6 +122,7 @@ IMPORTANT: Create EXACTLY %d different workouts in the workouts array.`, workout
 	// Call AI with structured response requirement
 	content, err := s.Client.CreateChatCompletion(ctx, messages, true)
 	if err != nil {
+		fmt.Printf("AI REQUEST FAILED during generate plan due to: %s", err)
 		return nil, NewServiceError(
 			http.StatusInternalServerError,
 			"AI request failed",
@@ -277,6 +278,7 @@ func (s *AIService) Chat(ctx context.Context, message string) (string, error) {
 	// Call AI
 	response, err := s.Client.CreateChatCompletion(ctx, messages, false)
 	if err != nil {
+		fmt.Printf("ERROR: AI REQUEST FAILED in Chat: %v\n", err)
 		return "", NewServiceError(
 			http.StatusInternalServerError,
 			"AI request failed",
@@ -405,7 +407,11 @@ func (s *AIService) fixJSONWithAI(ctx context.Context, content, errorMsg string)
 		{Role: "system", Content: "Fix this JSON to be valid. Return only the corrected JSON without any additional comments."},
 		{Role: "user", Content: fmt.Sprintf("Error: %s\nJSON: %s\nFix this JSON", errorMsg, content)},
 	}
-	return s.Client.CreateChatCompletion(ctx, messages, false)
+	response, err := s.Client.CreateChatCompletion(ctx, messages, false)
+	if err != nil {
+		fmt.Printf("ERROR: AI request failed in fixJSONWithAI: %v\n", err)
+	}
+	return response, err
 }
 
 func (s *AIService) createFallbackWorkouts(count int) []models.Workout {
@@ -588,7 +594,7 @@ IMPORTANT: Create EXACTLY %d different workouts. Follow ALL user requirements fr
 	fmt.Printf("Starting AI request...\n")
 	content, err := s.Client.CreateChatCompletion(ctx, messages, true)
 	if err != nil {
-		fmt.Printf("AI request failed: %v\n", err)
+		fmt.Printf("AI REQUEST FAILED when regenerating plan: %v\n", err)
 		return nil, NewServiceError(
 			http.StatusInternalServerError,
 			"AI request failed",
@@ -759,6 +765,7 @@ func (s *AIService) GenerateMotivationalMessage(ctx context.Context) (string, er
 
 	response, err := s.Client.CreateChatCompletion(ctx, messages, false)
 	if err != nil {
+		fmt.Printf("ERROR: AI request failed in GenerateMotivationalMessage: %v\n", err)
 		return "You're crushing it! Keep up the excellent work!", nil
 	}
 
