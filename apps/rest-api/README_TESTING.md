@@ -7,9 +7,15 @@ This project is covered by various types of tests to ensure code quality and rel
 
 ### Unit Tests
 - `internal/handlers/handlers_test.go` - tests for HTTP handlers
+- `internal/middleware/auth_test.go` - tests for authentication middleware
+- `internal/middleware/logging_test.go` - tests for logging middleware
 - `internal/services/ai_test.go` - tests for AI service
+- `internal/services/auth_test.go` - tests for authentication service
+- `internal/services/health_test.go` - tests for health service
+- `internal/services/profile_test.go` - tests for profile service
 - `internal/repository/mongodb_test.go` - tests for MongoDB repository
 - `internal/models/models_test.go` - tests for data models
+- `internal/config/config_test.go` - tests for configuration
 - `pkg/utils/crypto_test.go` - tests for cryptographic utilities
 - `pkg/utils/jwt_test.go` - tests for JWT utilities
 
@@ -63,8 +69,17 @@ Main components covered by tests:
 - ✅ Rating endpoint
 - ✅ Error handling
 
+### Middleware (Request processing)
+- ✅ Authentication middleware
+- ✅ JWT token validation
+- ✅ Logging middleware
+- ✅ Request/response tracking
+
 ### Services (Business logic)
 - ✅ AI Service rating functionality
+- ✅ Authentication service
+- ✅ Health service
+- ✅ Profile service
 - ✅ Error handling
 - ✅ Mock dependencies
 
@@ -72,6 +87,11 @@ Main components covered by tests:
 - ✅ MongoDB rating calculation
 - ✅ Consecutive days algorithm
 - ✅ Level calculation logic
+
+### Configuration
+- ✅ Environment variable loading
+- ✅ Default value handling
+- ✅ Duration parsing
 
 ### Utils (Utilities)
 - ✅ Password hashing/verification

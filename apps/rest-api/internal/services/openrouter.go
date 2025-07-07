@@ -19,6 +19,7 @@ const (
 
 // List of available models with priorities
 var availableModels = []string{
+	"deepseek/deepseek-chat-v3-0324:free",     // BEST
 	"mistralai/mistral-7b-instruct:free",      // Most stable
 	"google/gemma-7b-it:free",                 // From Google
 	"openchat/openchat-7b:free",               // Optimized for chat
