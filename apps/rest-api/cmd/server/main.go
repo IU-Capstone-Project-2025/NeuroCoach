@@ -28,6 +28,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
+	fmt.Printf("Loaded config: %+v\n", cfg)
 
 	// Run database migrations
 	if err := runMigrations(cfg.DatabaseURL); err != nil {

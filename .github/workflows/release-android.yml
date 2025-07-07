@@ -1,0 +1,35 @@
+name: Release Android App APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.1'
+      
+      - name: Install dependencies
+        working-directory: apps/android-app
+        run: flutter pub get
+      
+      - name: Build APK
+        working-directory: apps/android-app
+        run: flutter build apk --release
+
+      - name: Upload Release to GitHub
+        uses: softprops/action-gh-release@v1
+        with:
+          files: apps/android-app/build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

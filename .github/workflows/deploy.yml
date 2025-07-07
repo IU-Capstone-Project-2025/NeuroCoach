@@ -1,0 +1,42 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'nginx/**'
+      - 'docker-compose.yml'
+      - 'apps/rest-api/**'
+      - 'apps/ws-api/**'
+      - 'apps/frontend/**'
+      - '.github/workflows/deploy.yml'
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: SSH & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: Deploy via SSH
+        env:
+          OPENROUTER_KEY: ${{ secrets.OPENROUTER_KEY }}
+        run: |
+          ssh -o StrictHostKeyChecking=no blazz1t@blazz1t.online << EOF
+          export OPENROUTER_KEY="$OPENROUTER_KEY"
+          cd NeuroCoach
+          envsubst < docker-compose.yml > docker-compose.generated.yml
+          git pull origin main
+          docker-compose down
+          docker-compose up --build -d
+          EOF
