@@ -18,13 +18,14 @@ This project uses OpenRouter API to work with various AI models, providing stabl
 
 The system automatically switches between the following free models:
 
-1. `mistralai/mistral-7b-instruct:free` - Stable model from Mistral AI
-2. `google/gemma-7b-it:free` - Google's Gemma model
-3. `openchat/openchat-7b:free` - Optimized for conversations
-4. `anthropic/claude-3-haiku:free` - Claude 3 Haiku
-5. `meta-llama/llama-3-8b-instruct:free` - LLaMA 3 from Meta
-6. `nousresearch/nous-hermes-2-mixtral:free` - Nous Hermes Mixtral
-7. `microsoft/phi-3-mini-128k-instruct:free` - Microsoft Phi-3
+1. `deepseek/deepseek-chat-v3-0324:free` - DeepSeek Chat (Best performance)
+2. `openrouter/cypher-alpha:free` - Cypher Alpha model
+3. `google/gemma-7b-it:free` - Google's Gemma model
+4. `openchat/openchat-7b:free` - Optimized for conversations
+5. `anthropic/claude-3-haiku:free` - Claude 3 Haiku
+6. `meta-llama/llama-3-8b-instruct:free` - LLaMA 3 from Meta
+7. `nousresearch/nous-hermes-2-mixtral:free` - Nous Hermes Mixtral
+8. `microsoft/phi-3-mini-128k-instruct:free` - Microsoft Phi-3
 
 ## Setup
 

@@ -20,7 +20,7 @@ const (
 // List of available models with priorities
 var availableModels = []string{
 	"deepseek/deepseek-chat-v3-0324:free",     // BEST
-	"mistralai/mistral-7b-instruct:free",      // Most stable
+	"openrouter/cypher-alpha:free",            // Cypher Alpha
 	"google/gemma-7b-it:free",                 // From Google
 	"openchat/openchat-7b:free",               // Optimized for chat
 	"anthropic/claude-3-haiku:free",           // Claude 3 (most powerful free model)
