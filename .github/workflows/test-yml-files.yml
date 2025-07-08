@@ -1,0 +1,88 @@
+name: Lint and Validate Configs
+
+on:
+  pull_request:
+    paths:
+      - '**/Dockerfile'
+      - '**/docker-compose.yml'
+      - '**/nginx.conf'
+      - '.github/workflows/*.yml'
+  workflow_dispatch:
+
+
+jobs:
+  lint-dockerfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Install hadolint
+        run: |
+          wget -O hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+          chmod +x hadolint
+          sudo mv hadolint /usr/local/bin/
+      
+      - name: Lint Dockerfiles
+        run: |
+          find . -name Dockerfile -exec hadolint {} \;
+
+
+  validate-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Validate docker-compose.yml
+        run: docker compose config -q
+
+  validate-nginx:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Install nginx
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nginx
+
+      - name: Prepare and validate nginx.conf
+        run: |
+          CONFIG_PATH=nginx/nginx.conf
+
+          mkdir -p dummy_ssl/etc/ssl dummy_ssl/etc/ssl/private
+          mkdir -p nginx_tmp/logs
+
+          openssl req -x509 -nodes -days 1 \
+            -subj "/CN=localhost" \
+            -newkey rsa:2048 \
+            -keyout dummy_ssl/etc/ssl/private/cloudflare.key \
+            -out dummy_ssl/etc/ssl/cloudflare.crt
+
+          sed -e 's|/etc/ssl/cloudflare.crt|'"$(pwd)"'/dummy_ssl/etc/ssl/cloudflare.crt|g' \
+              -e 's|/etc/ssl/private/cloudflare.key|'"$(pwd)"'/dummy_ssl/etc/ssl/private/cloudflare.key|g' \
+              -e 's/frontend:80/127.0.0.1:8080/g' \
+              -e 's/rest-api:80/127.0.0.1:8081/g' \
+              -e 's/ws-api:80/127.0.0.1:8082/g' \
+              $CONFIG_PATH > temp.conf
+
+          sed -i -e 's/listen 80;/listen 8080;/g' \
+          -e 's/listen 443 ssl;/listen 8443 ssl;/g' temp.conf
+
+          sed -i '/http {/a \    access_log off;' temp.conf
+
+          cat <<EOF > nginx_wrapper.conf
+          daemon off;
+          master_process off;
+          pid logs/nginx.pid;
+          error_log logs/error.log;
+
+          include $(pwd)/temp.conf;
+          EOF
+          echo "=== nginx_wrapper.conf contents ==="
+          cat nginx_wrapper.conf
+          echo "================================="
+
+
+          nginx -T -c $(pwd)/nginx_wrapper.conf -p $(pwd)/nginx_tmp
+
