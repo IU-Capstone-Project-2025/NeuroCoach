@@ -69,6 +69,8 @@ jobs:
           sed -i '/http {/a \    access_log off;' temp.conf
 
           cat <<EOF > nginx_wrapper.conf
+          daemon off;
+          master_process off;
           pid logs/nginx.pid;
           error_log logs/error.log;
 
