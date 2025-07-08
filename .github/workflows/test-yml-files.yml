@@ -52,28 +52,11 @@ jobs:
 
           mkdir -p dummy_ssl/etc/ssl dummy_ssl/etc/ssl/private
 
-          cat > dummy_ssl/etc/ssl/cloudflare.crt <<EOF
-          -----BEGIN CERTIFICATE-----
-          MIIBjzCCATSgAwIBAgIUe1LKdD8RhJLPWbZ38cO/ypO7JfkwCgYIKoZIzj0EAwIw
-          EjEQMA4GA1UEAwwHZXhhbXBsZTAeFw0yMDAxMDEwMDAwMDBaFw0zMDAxMDEwMDAw
-          MDBaMBIxEDAOBgNVBAMMB2V4YW1wbGUwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNC
-          AAQqPMB71ReD4ko6SIVr9uEry7E9uGqSp3J4mPklXeou7lsdlGyo7fBSkJ5u/0vV
-          h5k9YzWv0SE2HtQ3GZ7hyZTxo1MwUTAdBgNVHQ4EFgQUVQzNY9cNYJcQnXnyocV3
-          vM3DiPyAwHwYDVR0jBBgwFoAUVQzNY9cNYJcQnXnyocV3vM3DiPyAwDwYDVR0TAQ
-          H/BAUwAwEB/zAKBggqhkjOPQQDAgNHADBEAiA+LtEz6K0zQjDtBz+K/MoCFql0fY
-          XrNg0Ijw+uDb0vzmSAIgCw4k6sWc1mFY8d2DYiLaPzHcCUiLFG6v0kpMCh/4Sv1w
-          -----END CERTIFICATE-----
-          EOF
-
-          cat > dummy_ssl/etc/ssl/private/cloudflare.key <<EOF
-          -----BEGIN EC PRIVATE KEY-----
-          MHcCAQEEIO3MGzmkb8pAP9Ju1mQzI8jw8Y83ysI1wdtHkpHOqWpYooAoGCCqGSM49
-          AwEHoUQDQgAEKjzwe9UXg+JKOiIla/bgK8uxPbhqkqdyeJj5JV3qLu5bHZRsqO3w
-          UpCebv9L1YeZPWM1r9EhNh7UNxm
-          -----END EC PRIVATE KEY-----
-          EOF
-
-          #NOT ACTUAL KEYS. SAFE FOR PUBLICITY
+          openssl req -x509 -nodes -days 1 \
+            -subj "/CN=localhost" \
+            -newkey rsa:2048 \
+            -keyout dummy_ssl/etc/ssl/private/cloudflare.key \
+            -out dummy_ssl/etc/ssl/cloudflare.crt
 
           sed -e 's|/etc/ssl/cloudflare.crt|'"$(pwd)"'/dummy_ssl/etc/ssl/cloudflare.crt|g' \
               -e 's|/etc/ssl/private/cloudflare.key|'"$(pwd)"'/dummy_ssl/etc/ssl/private/cloudflare.key|g' \
@@ -82,6 +65,7 @@ jobs:
               -e 's/ws-api:80/127.0.0.1:8082/g' \
               $CONFIG_PATH > temp.conf
 
+          # Validate the config
           nginx -t -c $(pwd)/temp.conf
 
 
