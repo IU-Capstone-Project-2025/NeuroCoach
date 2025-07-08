@@ -32,7 +32,7 @@ jobs:
         env:
           OPENROUTER_KEY: ${{ secrets.OPENROUTER_KEY }}
         run: |
-          ssh -o StrictHostKeyChecking=no blazz1t@blazz1t.online << EOF
+          ssh -o StrictHostKeyChecking=no blazz1t@${{ secrets.SSH_BASE_URL }} << EOF
           export OPENROUTER_KEY="$OPENROUTER_KEY"
           cd NeuroCoach
           envsubst < docker-compose.yml > docker-compose.generated.yml
