@@ -1,0 +1,44 @@
+name: Lint and Validate Configs
+
+on:
+  pull_request:
+    paths:
+      - '**/Dockerfile'
+      - '**/docker-compose.yml'
+      - '**/nginx.conf'
+      - '.github/workflows/*.yml'
+  workflow_dispatch:
+
+
+jobs:
+  lint-dockerfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: ./Dockerfile
+
+  validate-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Validate docker-compose.yml
+        run: docker-compose config -q
+
+  validate-nginx:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Validate nginx.conf syntax
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nginx
+          nginx -t -c ${{ github.workspace }}/nginx/nginx.conf
+
+  validate-workflows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Validate GitHub Actions workflows
+        uses: docker://rhysd/actionlint
