@@ -2,8 +2,12 @@ name: Release Android App APK
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - 'main'
+    paths:
+      - 'apps/android-app/**'
+      - '.github/workflows/release-android.yml'
+
 
 jobs:
   build:
@@ -25,11 +29,12 @@ jobs:
       
       - name: Build APK
         working-directory: apps/android-app
-        run: flutter build apk --release
+        run: flutter build apk --release --dart-define=BASE_URL=${{ secrets.BASE_URL }}
 
-      - name: Upload Release to GitHub
-        uses: softprops/action-gh-release@v1
-        with:
-          files: apps/android-app/build/app/outputs/flutter-apk/app-release.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Clean release folder
+        run: |
+          rm -rf apps/android-app/release/*
+      
+      - name: Copy APK to release folder
+        run: |
+          cp apps/android-app/build/app/outputs/flutter-apk/app-release.apk apps/android-app/release/
