@@ -79,6 +79,9 @@ jobs:
 
           include $(pwd)/temp.conf;
           EOF
+          echo "=== nginx_wrapper.conf contents ==="
+          cat nginx_wrapper.conf
+          echo "================================="
 
 
           nginx -T -c $(pwd)/nginx_wrapper.conf -p $(pwd)/nginx_tmp
