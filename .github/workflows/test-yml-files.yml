@@ -51,6 +51,7 @@ jobs:
           CONFIG_PATH=nginx/nginx.conf
 
           mkdir -p dummy_ssl/etc/ssl dummy_ssl/etc/ssl/private
+          mkdir -p nginx_tmp/logs
 
           openssl req -x509 -nodes -days 1 \
             -subj "/CN=localhost" \
@@ -64,8 +65,13 @@ jobs:
               -e 's/rest-api:80/127.0.0.1:8081/g' \
               -e 's/ws-api:80/127.0.0.1:8082/g' \
               $CONFIG_PATH > temp.conf
-              
-          nginx -t -c $(pwd)/temp.conf -p $(pwd)/nginx_tmp
+
+          echo "pid logs/nginx.pid;" > nginx_wrapper.conf
+          echo "error_log logs/error.log;" >> nginx_wrapper.conf
+          echo "include $(pwd)/temp.conf;" >> nginx_wrapper.conf
+
+          nginx -t -c $(pwd)/nginx_wrapper.conf -p $(pwd)/nginx_tmp
+
 
 
   validate-workflows:
