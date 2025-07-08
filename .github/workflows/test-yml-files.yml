@@ -66,12 +66,19 @@ jobs:
               -e 's/ws-api:80/127.0.0.1:8082/g' \
               $CONFIG_PATH > temp.conf
 
-          {
-            echo "pid logs/nginx.pid;";
-            echo "error_log logs/error.log;";
-            echo "access_log logs/access.log;";
-            echo "include $(pwd)/temp.conf;";
-          } > nginx_wrapper.conf
+          cat <<EOF > nginx_wrapper.conf
+          pid logs/nginx.pid;
+
+          events {}
+
+          http {
+              access_log logs/access.log;
+              error_log logs/error.log;
+
+              include $(pwd)/temp.conf;
+          }
+          EOF
+
 
           nginx -t -c $(pwd)/nginx_wrapper.conf -p $(pwd)/nginx_tmp
 
