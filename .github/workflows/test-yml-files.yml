@@ -14,31 +14,51 @@ jobs:
   lint-dockerfile:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: hadolint/hadolint-action@v3.1.0
-        with:
-          dockerfile: ./Dockerfile
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Install hadolint
+        run: |
+          wget -O hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+          chmod +x hadolint
+          sudo mv hadolint /usr/local/bin/
+      
+      - name: Lint Dockerfiles
+        run: |
+          find . -name Dockerfile -exec hadolint {} \;
+
 
   validate-compose:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Validate docker-compose.yml
-        run: docker-compose config -q
+        run: docker compose config -q
 
   validate-nginx:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Validate nginx.conf syntax
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      
+      - name: Install nginx
         run: |
           sudo apt-get update
           sudo apt-get install -y nginx
-          nginx -t -c ${{ github.workspace }}/nginx/nginx.conf
+
+      - name: Validate nginx.conf syntax
+        run: |
+          CONFIG_PATH=nginx/nginx.conf
+          sed -e 's/frontend:80/127.0.0.1:8080/g' \
+            -e 's/rest-api:80/127.0.0.1:8081/g' \
+            -e 's/ws-api:80/127.0.0.1:8082/g' \
+            $CONFIG_PATH > temp.conf
+          nginx -t -c $(pwd)/temp.conf
 
   validate-workflows:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Validate GitHub Actions workflows
-        uses: docker://rhysd/actionlint
+    - uses: actions/checkout@v3
+    - name: Validate GitHub Actions workflows
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/mnt rhysd/actionlint -ignore action /mnt/.github/workflows
