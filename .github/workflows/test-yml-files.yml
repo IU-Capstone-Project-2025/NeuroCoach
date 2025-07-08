@@ -64,9 +64,8 @@ jobs:
               -e 's/rest-api:80/127.0.0.1:8081/g' \
               -e 's/ws-api:80/127.0.0.1:8082/g' \
               $CONFIG_PATH > temp.conf
-
-          # Validate the config
-          nginx -t -c $(pwd)/temp.conf
+              
+          nginx -t -c $(pwd)/temp.conf -p $(pwd)/nginx_tmp
 
 
   validate-workflows:
