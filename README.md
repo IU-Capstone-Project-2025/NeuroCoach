@@ -15,6 +15,8 @@
 - To access the android app, navigate to `apps/android-app/releases` and download the `.apk` file on your Android device.
 - To build your own local version of the project, do the following steps:
   - Edit `nginx/nginx.conf` so all instances of `blazz1t.online` become `localhost`
+  - In the same file, replace all `listen 443 ssl` instances with `listen 80` and remove all ssl related lines
+  - Also remove the server {} block that returns 301 with redirect.
   - Add this line to your `hosts` file:  
     `127.0.0.1 localhost api.localhost ws.localhost`  
     - On **Windows**, it's located in `C:\Windows\System32\drivers\etc\hosts`  
