@@ -82,6 +82,8 @@ jobs:
               -e 's/ws-api:80/127.0.0.1:8082/g' \
               $CONFIG_PATH > temp.conf
 
+          nginx -t -c $(pwd)/temp.conf
+
 
   validate-workflows:
     runs-on: ubuntu-latest
