@@ -1,5 +1,6 @@
 import 'package:android_app/features/chat/domain/entities/chat_message_entity.dart';
 import 'package:android_app/features/chat/domain/repositories/chat_messages_repository.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -39,6 +40,21 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       );
       _messages.add(botMessage);
       emit(ChatStateLoaded(messages: [..._messages]));
+    } on DioException catch (e, s) {
+      if (kDebugMode) {
+        print('$e, $s');
+        print(e.response?.data);
+      }
+      _messages.add(
+        ChatMessage(
+          id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
+          message: event.message,
+          response: 'Something went wrong....',
+          isUser: false,
+          createdAt: DateTime.now(),
+        ),
+      );
+      emit(ChatStateError(messages: _messages));
     } on Object catch (e, s) {
       if (kDebugMode) print('$e, $s');
       _messages.add(
@@ -86,6 +102,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       }
 
       emit(ChatStateLoaded(messages: _messages));
+    } on DioException catch (e, s) {
+      if (kDebugMode) {
+        print('$e, $s');
+        print(e.response?.data['message']);
+      }
+      emit(ChatStateError(messages: _messages));
     } on Object catch (e, s) {
       if (kDebugMode) print('$e, $s');
       emit(ChatStateError(messages: _messages));

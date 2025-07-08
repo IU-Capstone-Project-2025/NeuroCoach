@@ -25,7 +25,10 @@ class PathPage extends StatelessWidget {
       ),
       body: BlocBuilder<WorkoutBloc, WorkoutState>(
         builder: (BuildContext context, WorkoutState state) {
-          if (state is WorkoutStateLoading) {
+          if (state is WorkoutStateLoading || state is WorkoutStateRefresh) {
+            if (state is WorkoutStateRefresh) {
+              context.read<WorkoutBloc>().add(WorkoutEventGenerate());
+            }
             return Center(child: CircularProgressIndicator());
           } else if (state is WorkoutStateError) {
             return Center(
@@ -91,7 +94,9 @@ class WorkoutPath extends StatelessWidget {
         .any((w) => w.status == 'planned');
 
     if ((!hasPreviousPlanned && prevCompleted) ||
-        (index == 0 && workouts[index].status == 'planned')) {
+        (index == 0 &&
+            (workouts[index].status == 'planned' ||
+                workouts[index].status == 'expired'))) {
       return WorkoutStatus.current;
     }
 
