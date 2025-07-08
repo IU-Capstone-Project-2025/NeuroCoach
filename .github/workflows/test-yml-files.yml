@@ -76,7 +76,7 @@ jobs:
           EOF
 
 
-          nginx -t -c $(pwd)/nginx_wrapper.conf -p $(pwd)/nginx_tmp
+          nginx -T -c $(pwd)/nginx_wrapper.conf -p $(pwd)/nginx_tmp
 
 
 
