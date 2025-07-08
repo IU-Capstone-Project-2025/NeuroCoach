@@ -66,17 +66,13 @@ jobs:
               -e 's/ws-api:80/127.0.0.1:8082/g' \
               $CONFIG_PATH > temp.conf
 
+          sed -i '/http {/a \    access_log off;' temp.conf
+
           cat <<EOF > nginx_wrapper.conf
           pid logs/nginx.pid;
+          error_log logs/error.log;
 
-          events {}
-
-          http {
-              access_log logs/access.log;
-              error_log logs/error.log;
-
-              include $(pwd)/temp.conf;
-          }
+          include $(pwd)/temp.conf;
           EOF
 
 
