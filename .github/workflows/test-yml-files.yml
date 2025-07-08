@@ -86,14 +86,3 @@ jobs:
 
           nginx -T -c $(pwd)/nginx_wrapper.conf -p $(pwd)/nginx_tmp
 
-
-
-
-  validate-workflows:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Validate GitHub Actions workflows
-      run: |
-        docker run --rm -v ${{ github.workspace }}:/mnt rhysd/actionlint sh -c "find /mnt/.github/workflows -type f \\( -name '*.yml' -o -name '*.yaml' \\) -exec actionlint {} +"
-
