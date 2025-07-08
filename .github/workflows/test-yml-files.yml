@@ -61,4 +61,4 @@ jobs:
     - uses: actions/checkout@v3
     - name: Validate GitHub Actions workflows
       run: |
-        docker run --rm -v ${{ github.workspace }}:/mnt rhysd/actionlint -ignore action /mnt/.github/workflows
+        docker run --rm -v ${{ github.workspace }}:/mnt rhysd/actionlint -ignore action /mnt/.github/workflows/*.yml
