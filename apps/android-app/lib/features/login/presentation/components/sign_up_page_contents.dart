@@ -27,11 +27,9 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
   late final TextEditingController _weightController;
   late final TextEditingController _minutesController;
   late final TextEditingController _healthIssuesController;
-
   String? _selectedGoal;
   String? _selectedTimeframe;
   String? _selectedLevel;
-
   final goals = [
     'weight_loss',
     'muscle_gain',
@@ -66,9 +64,36 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
     super.dispose();
   }
 
+  void _showError(BuildContext context, String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  bool _validateEmail(String email) {
+    final emailRegExp = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    return emailRegExp.hasMatch(email);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        centerTitle: true,
+        titleTextStyle: AppTextStyles.chatTitle,
+        backgroundColor: Colors.transparent,
+        title: BlocBuilder<SignUpBloc, SignUpState>(
+          builder: (context, state) {
+            if ((state is! SignUpStateInitial) &&
+                (state is! SignUpStateFinish)) {
+              return Text('${state.step} of 6');
+            } else {
+              return const SizedBox.shrink();
+            }
+          },
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: BlocBuilder<SignUpBloc, SignUpState>(
@@ -88,18 +113,9 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                       child: Image.asset('assets/robot.png'),
                     ),
                     SizedBox(height: 36.0),
-                    AppTextField(
-                      controller: _emailController,
-                      prefixIcon: Icons.person,
-                      inputType: TextInputType.emailAddress,
-                      hint: 'Email',
-                    ),
-                    const SizedBox(height: 8.0),
-                    AppTextField(
-                      controller: _passwordController,
-                      prefixIcon: Icons.lock,
-                      isPassword: true,
-                      hint: 'Password',
+                    Text(
+                      'Begin your journey or sth',
+                      style: AppTextStyles.textButton,
                     ),
                     const SizedBox(height: 16),
                     BlocBuilder<SignUpBloc, SignUpState>(
@@ -108,16 +124,9 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                         return SizedBox(
                           width: double.infinity,
                           child: AppButton(
-                            onPressed: isLoading
-                                ? null
-                                : () {
-                                    final email = _emailController.text.trim();
-                                    final password = _passwordController.text
-                                        .trim();
-                                    context.read<SignUpBloc>().add(
-                                      SignUpEventStartSignup(email, password),
-                                    );
-                                  },
+                            onPressed: () => context.read<SignUpBloc>().add(
+                              SignUpEventStartSignup(),
+                            ),
                             padding: EdgeInsetsGeometry.symmetric(
                               horizontal: 16,
                             ),
@@ -349,7 +358,7 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                     ),
                     const SizedBox(height: 16),
                     AppButton(
-                      text: 'Finish Sign Up',
+                      text: 'Next',
                       onPressed: () {
                         final issues = _healthIssuesController.text
                             .split(',')
@@ -357,7 +366,67 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                             .where((e) => e.isNotEmpty)
                             .toList();
                         context.read<SignUpBloc>().add(
-                          SignUpEventFinish(issues),
+                          SignUpEventGetHealthIssues(issues),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              case SignUpStateGetCredentials():
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Finally, let us get your credentials',
+                      style: AppTextStyles.textButton,
+                    ),
+                    const SizedBox(height: 12),
+                    AppTextField(
+                      controller: _emailController,
+                      prefixIcon: Icons.person,
+                      inputType: TextInputType.emailAddress,
+                      hint: 'Email',
+                    ),
+                    const SizedBox(height: 8.0),
+                    AppTextField(
+                      controller: _passwordController,
+                      prefixIcon: Icons.lock,
+                      isPassword: true,
+                      hint: 'Password',
+                    ),
+                    const SizedBox(height: 16),
+                    BlocBuilder<SignUpBloc, SignUpState>(
+                      builder: (context, state) {
+                        final isLoading = state is LoginStateLoading;
+                        return SizedBox(
+                          width: double.infinity,
+                          child: AppButton(
+                            onPressed: isLoading
+                                ? null
+                                : () {
+                                    if (_emailController.text.isNotEmpty &&
+                                        _passwordController.text.isNotEmpty) {
+                                      if (_validateEmail(_emailController.text)) {
+                                        final email = _emailController.text
+                                            .trim();
+                                        final password = _passwordController.text
+                                            .trim();
+                                        context.read<SignUpBloc>().add(
+                                          SignUpEventFinish(email, password),
+                                        );
+                                      } else {
+                                        _showError(context, 'Please enter valid email');
+                                      }
+                                    } else {
+                                      _showError(context, 'Please enter both email and password');
+                                    }
+                                  },
+                            padding: EdgeInsetsGeometry.symmetric(
+                              horizontal: 16,
+                            ),
+                            isDisabled: isLoading,
+                            text: 'Finish sign up',
+                          ),
                         );
                       },
                     ),
@@ -385,9 +454,5 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
         ),
       ),
     );
-  }
-
-  void _showError(BuildContext context, String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 }
