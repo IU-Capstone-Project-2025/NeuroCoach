@@ -22,9 +22,6 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
   ) async {
     emit(WorkoutStateLoading());
     try {
-      if (await _workoutPathRepository.generate()) {
-        if (kDebugMode) print('Generated new path');
-      }
       final workouts = await _workoutPathRepository.fetchWorkouts();
       emit(WorkoutStateLoaded(workout: workouts));
     } on DioException catch (e, s) {

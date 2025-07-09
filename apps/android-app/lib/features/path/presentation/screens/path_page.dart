@@ -91,7 +91,7 @@ class WorkoutPath extends StatelessWidget {
 
     final hasPreviousPlanned = workouts
         .sublist(0, index)
-        .any((w) => w.status == 'planned');
+        .any((w) => w.status == 'planned' || w.status == 'expired');
 
     if ((!hasPreviousPlanned && prevCompleted) ||
         (index == 0 &&
