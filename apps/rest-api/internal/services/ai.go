@@ -242,12 +242,23 @@ func (s *AIService) Chat(ctx context.Context, message string) (string, error) {
 		)
 	}
 
-	// Build conversation context
+	// Get user's fitness profile to check if they're a beginner
+	profile, err := s.Repo.GetFitnessProfile(ctx, userID)
+	isBeginner := false
+	if err == nil && profile != nil && profile.FitnessLevel == "beginner" {
+		isBeginner = true
+	}
+
+	// Build conversation context with beginner mode if needed
+	systemContent := "You are a helpful fitness assistant. Provide concise and helpful responses about fitness, nutrition, and health."
+	if isBeginner {
+		systemContent += " IMPORTANT: The user is a beginner with limited fitness knowledge. Explain concepts in very simple terms as if explaining to a kid. Avoid technical jargon, use basic language, and include extra safety tips."
+	}
+
 	messages := []OpenRouterMessage{
 		{
-			Role: "system",
-			Content: "You are a helpful fitness assistant. " +
-				"Provide concise and helpful responses about fitness, nutrition, and health.",
+			Role:    "system",
+			Content: systemContent,
 		},
 	}
 
@@ -334,6 +345,11 @@ func (s *AIService) formatWorkoutPrompt(profile *models.FitnessProfile) string {
 	sb.WriteString("3. Progression plan\n")
 	sb.WriteString("4. Safety considerations\n")
 	sb.WriteString("5. Format in JSON\n")
+
+	// Add beginner mode instructions if user is a beginner
+	if profile.FitnessLevel == "beginner" {
+		sb.WriteString("\nIMPORTANT: This user is a beginner. Please explain all exercises in very simple terms as if explaining to someone with no fitness experience. Use basic language, avoid technical jargon, and include extra safety tips. Provide detailed step-by-step instructions for each exercise.\n")
+	}
 
 	return sb.String()
 }
@@ -817,6 +833,11 @@ func (s *AIService) formatRegeneratePrompt(profile *models.FitnessProfile, curre
 	sb.WriteString("\n3. Consideration of their health issues")
 	sb.WriteString("\n4. Time constraints")
 	sb.WriteString("\n5. Progressive overload principles")
+
+	// Add beginner mode instructions if user is a beginner
+	if profile.FitnessLevel == "beginner" {
+		sb.WriteString("\n\nIMPORTANT: This user is a beginner. Please explain all exercises in very simple terms as if explaining to someone with no fitness experience. Use basic language, avoid technical jargon, and include extra safety tips. Provide detailed step-by-step instructions for each exercise.\n")
+	}
 
 	return sb.String()
 }

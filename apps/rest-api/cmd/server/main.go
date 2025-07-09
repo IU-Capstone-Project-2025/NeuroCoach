@@ -50,9 +50,10 @@ func main() {
 	profileService := services.NewProfileService(postgresRepo)
 	aiService := services.NewAIService(postgresRepo, mongoRepo, cfg.OpenRouterKey)
 	healthService := services.NewHealthService(postgresRepo)
+	mediaService := services.NewMediaService(postgresRepo, mongoRepo)
 
 	// Initialize handlers
-	h := handlers.NewHandlers(authService, profileService, aiService, healthService)
+	h := handlers.NewHandlers(authService, profileService, aiService, healthService, mediaService)
 
 	// Setup router
 	r := mux.NewRouter()
@@ -78,6 +79,11 @@ func main() {
 		authRouter.HandleFunc("/regenerate-plan", h.RegenerateWorkoutPlan).Methods("POST")
 		authRouter.HandleFunc("/complete-workout", h.CompleteWorkout).Methods("POST")
 		authRouter.HandleFunc("/progress", h.GetUserProgress).Methods("GET")
+		
+		// Exercise media routes
+		authRouter.HandleFunc("/exercise/{exercise_id}/media", h.GetExerciseMedia).Methods("GET")
+		authRouter.HandleFunc("/exercise/media", h.SaveExerciseMedia).Methods("POST")
+		authRouter.HandleFunc("/exercise/media/{media_id}", h.DeleteExerciseMedia).Methods("DELETE")
 		authRouter.HandleFunc("/rating", h.GetRating).Methods("GET")
 		authRouter.HandleFunc("/motivation", h.GetMotivationalMessage).Methods("GET")
 	}

@@ -14,6 +14,7 @@ type Handlers struct {
 	ProfileService *services.ProfileService
 	AIService      *services.AIService
 	HealthService  *services.HealthService
+	MediaService   *services.MediaService
 }
 
 func NewHandlers(
@@ -21,12 +22,14 @@ func NewHandlers(
 	profile *services.ProfileService,
 	ai *services.AIService,
 	health *services.HealthService,
+	media *services.MediaService,
 ) *Handlers {
 	return &Handlers{
 		AuthService:    auth,
 		ProfileService: profile,
 		AIService:      ai,
 		HealthService:  health,
+		MediaService:   media,
 	}
 }
 
