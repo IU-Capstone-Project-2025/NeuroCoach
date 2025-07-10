@@ -59,7 +59,6 @@ class HomeScope extends StatelessWidget {
           BlocListener<FinishWorkoutBloc, FinishWorkoutState>(
             listener: (BuildContext context, FinishWorkoutState state) {
               if (state is FinishWorkoutStateLoaded) {
-                context.router.maybePop();
                 context.read<WorkoutBloc>().add(WorkoutEventFetch());
               }
               if (state is FinishWorkoutStateError) {

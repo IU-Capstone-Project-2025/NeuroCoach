@@ -32,6 +32,7 @@ class WorkoutPage extends StatefulWidget {
 class _WorkoutPageState extends State<WorkoutPage> {
   int? _expandedIndex;
   bool isTrainingStarted = false;
+  bool isTrainingFinished = false;
   bool isRest = false;
   int exerciseIndex = 0;
 
@@ -57,21 +58,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
         isRest = false;
       });
     } else {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Training Complete!"),
-          content: AppButton(
-            text: "Finish training",
-            onPressed: () {
-              context.router.maybePop();
-              context.read<FinishWorkoutBloc>().add(
-                FinishWorkoutEventFinish(widget.workoutId),
-              );
-            },
-          ),
-        ),
-      );
+      setState(() {
+        isTrainingFinished = true;
+      });
     }
   }
 
@@ -88,6 +77,10 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 
   void _goToRest() {
+    if (_chooseNextValidExercise() == -1) {
+      _onRestFinished();
+      return;
+    }
     setState(() {
       isRest = true;
     });
@@ -110,7 +103,29 @@ class _WorkoutPageState extends State<WorkoutPage> {
         automaticallyImplyLeading: !isTrainingStarted,
       ),
       body: Center(
-        child: isTrainingStarted
+        child: isTrainingFinished
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'You completed all the exercises!',
+                      style: AppTextStyles.textButton,
+                    ),
+                    const SizedBox(height: 16),
+                    AppButton(
+                      onPressed: () => {
+                        context.read<FinishWorkoutBloc>().add(
+                          FinishWorkoutEventFinish(widget.workoutId),
+                        ),
+                        context.router.maybePop(),
+                      },
+                      text: 'Finish',
+                    ),
+                  ],
+                ),
+              )
+            : isTrainingStarted
             ? isRest
                   ? RestTimer(
                       restTime: _chooseRestTime(),
