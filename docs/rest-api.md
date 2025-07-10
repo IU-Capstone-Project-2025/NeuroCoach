@@ -340,6 +340,78 @@ Authorization: Bearer <token>
 ]
 ```
 
+### Exercise Media Management
+
+#### Save Exercise Media
+Save an image with description for an exercise.
+
+```http
+POST /api/exercise/media
+Authorization: Bearer <token>
+```
+
+**Request Body**
+```json
+{
+  "exercise_id": "exercise_object_id_here",
+  "image_url": "https://example.com/images/exercise1.jpg",
+  "description": "Starting position for squat exercise",
+  "order": 1
+}
+```
+
+**Response** (201 Created)
+```json
+{
+  "message": "Exercise media saved successfully"
+}
+```
+
+#### Get Exercise Media
+Retrieve all images with descriptions for a specific exercise.
+
+```http
+GET /api/exercise/{exercise_id}/media
+Authorization: Bearer <token>
+```
+
+**Response** (200 OK)
+```json
+[
+  {
+    "id": "media_id_1",
+    "exercise_id": "exercise_id",
+    "image_url": "https://example.com/images/exercise1.jpg",
+    "description": "Starting position for squat exercise",
+    "order": 1,
+    "created_at": "2024-03-20T10:00:00Z"
+  },
+  {
+    "id": "media_id_2",
+    "exercise_id": "exercise_id",
+    "image_url": "https://example.com/images/exercise2.jpg",
+    "description": "Mid-position for squat exercise",
+    "order": 2,
+    "created_at": "2024-03-20T10:05:00Z"
+  }
+]
+```
+
+#### Delete Exercise Media
+Delete an image with description for an exercise.
+
+```http
+DELETE /api/exercise/media/{media_id}
+Authorization: Bearer <token>
+```
+
+**Response** (200 OK)
+```json
+{
+  "message": "Exercise media deleted successfully"
+}
+```
+
 ## Data Models
 
 ### Fitness Profile
@@ -394,6 +466,16 @@ Authorization: Bearer <token>
 | rest_sec | integer | Rest time in seconds |
 | notes | string | Additional notes |
 | technique | string | Technique instructions |
+
+### Exercise Media
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Media ID |
+| exercise_id | string | Exercise ID |
+| image_url | string | URL to exercise image |
+| description | string | Description of the image |
+| order | integer | Display order of images |
+| created_at | string | Creation timestamp |
 
 ### User Progress
 | Field | Type | Description |

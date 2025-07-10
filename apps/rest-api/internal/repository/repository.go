@@ -45,4 +45,9 @@ type MongoDBRep interface {
 	CompleteWorkout(ctx context.Context, userID int, workoutID string) error
 	GetUserProgress(ctx context.Context, userID int) (*models.UserProgress, error)
 	GetRating(ctx context.Context) ([]models.UserRating, error)
+
+	// Exercise media operations
+	SaveExerciseMedia(ctx context.Context, media *models.ExerciseMedia) error
+	GetExerciseMedia(ctx context.Context, exerciseID string) ([]models.ExerciseMedia, error)
+	DeleteExerciseMedia(ctx context.Context, mediaID string) error
 }
