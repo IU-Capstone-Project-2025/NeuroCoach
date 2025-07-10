@@ -74,8 +74,10 @@ abstract class _$AppRouter extends RootStackRouter {
         routeData: routeData,
         child: WorkoutPage(
           key: args.key,
+          workoutId: args.workoutId,
           name: args.name,
           exercises: args.exercises,
+          isCurrentTraining: args.isCurrentTraining,
         ),
       );
     },
@@ -228,15 +230,19 @@ class SettingsRoute extends PageRouteInfo<void> {
 class WorkoutRoute extends PageRouteInfo<WorkoutRouteArgs> {
   WorkoutRoute({
     Key? key,
+    required String workoutId,
     required String name,
     required List<Exercise> exercises,
+    required bool isCurrentTraining,
     List<PageRouteInfo>? children,
   }) : super(
           WorkoutRoute.name,
           args: WorkoutRouteArgs(
             key: key,
+            workoutId: workoutId,
             name: name,
             exercises: exercises,
+            isCurrentTraining: isCurrentTraining,
           ),
           initialChildren: children,
         );
@@ -250,19 +256,25 @@ class WorkoutRoute extends PageRouteInfo<WorkoutRouteArgs> {
 class WorkoutRouteArgs {
   const WorkoutRouteArgs({
     this.key,
+    required this.workoutId,
     required this.name,
     required this.exercises,
+    required this.isCurrentTraining,
   });
 
   final Key? key;
+
+  final String workoutId;
 
   final String name;
 
   final List<Exercise> exercises;
 
+  final bool isCurrentTraining;
+
   @override
   String toString() {
-    return 'WorkoutRouteArgs{key: $key, name: $name, exercises: $exercises}';
+    return 'WorkoutRouteArgs{key: $key, workoutId: $workoutId, name: $name, exercises: $exercises, isCurrentTraining: $isCurrentTraining}';
   }
 }
 

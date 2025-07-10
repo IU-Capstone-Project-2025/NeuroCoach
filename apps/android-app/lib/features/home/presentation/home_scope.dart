@@ -1,4 +1,5 @@
 import 'package:android_app/app/app_router.dart';
+import 'package:android_app/features/path/domain/bloc/finish_workout_bloc.dart';
 import 'package:android_app/features/path/domain/bloc/workout_path_bloc.dart';
 import 'package:android_app/features/settings/domain/bloc/logout_bloc.dart';
 import 'package:android_app/features/settings/domain/bloc/profile_bloc.dart';
@@ -38,6 +39,9 @@ class HomeScope extends StatelessWidget {
               ProfileBloc(profileRepository: depScope.profileRepository)
                 ..add(ProfileEventLoad()),
         ),
+        BlocProvider(
+          create: (_) => FinishWorkoutBloc(depScope.finishWorkoutRepository),
+        ),
       ],
       child: MultiBlocListener(
         listeners: [
@@ -46,6 +50,18 @@ class HomeScope extends StatelessWidget {
               if (state is LogoutStateLoggedOut) {
                 context.router.replace(InitRoute());
               } else if (state is LogoutStateError) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Something went wrong')));
+              }
+            },
+          ),
+          BlocListener<FinishWorkoutBloc, FinishWorkoutState>(
+            listener: (BuildContext context, FinishWorkoutState state) {
+              if (state is FinishWorkoutStateLoaded) {
+                context.read<WorkoutBloc>().add(WorkoutEventFetch());
+              }
+              if (state is FinishWorkoutStateError) {
                 ScaffoldMessenger.of(
                   context,
                 ).showSnackBar(SnackBar(content: Text('Something went wrong')));

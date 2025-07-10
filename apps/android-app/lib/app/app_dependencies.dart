@@ -3,6 +3,7 @@ import 'package:android_app/features/init/domain/repositories/health_repository.
 import 'package:android_app/features/init/domain/repositories/init_repository.dart';
 import 'package:android_app/features/login/domain/repositories/login_repository.dart';
 import 'package:android_app/features/login/domain/repositories/remember_me_repository.dart';
+import 'package:android_app/features/path/domain/repositories/finish_workout_repository.dart';
 import 'package:android_app/features/path/domain/repositories/workout_path_repository.dart';
 import 'package:android_app/features/settings/domain/repositories/logout_repository.dart';
 import 'package:android_app/features/settings/domain/repositories/profile_repository.dart';
@@ -19,6 +20,7 @@ class AppDependencies {
     required this.logoutRepository,
     required this.workoutPathRepository,
     required this.profileRepository,
+    required this.finishWorkoutRepository,
   });
 
   final LoginRepository loginRepository;
@@ -29,4 +31,5 @@ class AppDependencies {
   final LogoutRepository logoutRepository;
   final WorkoutPathRepository workoutPathRepository;
   final ProfileRepository profileRepository;
+  final FinishWorkoutRepository finishWorkoutRepository;
 }

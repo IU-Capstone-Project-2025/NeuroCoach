@@ -25,7 +25,10 @@ class PathPage extends StatelessWidget {
       ),
       body: BlocBuilder<WorkoutBloc, WorkoutState>(
         builder: (BuildContext context, WorkoutState state) {
-          if (state is WorkoutStateLoading) {
+          if (state is WorkoutStateLoading || state is WorkoutStateRefresh) {
+            if (state is WorkoutStateRefresh) {
+              context.read<WorkoutBloc>().add(WorkoutEventGenerate());
+            }
             return Center(child: CircularProgressIndicator());
           } else if (state is WorkoutStateError) {
             return Center(
@@ -79,19 +82,21 @@ class WorkoutPath extends StatelessWidget {
     final current = workouts[index];
     final status = current.status;
 
-    if (status == 'complete') return WorkoutStatus.completed;
+    if (status == 'done') return WorkoutStatus.completed;
 
     final prevCompleted = workouts
         .sublist(0, index)
-        .where((w) => w.status == 'complete')
+        .where((w) => w.status == 'done')
         .isNotEmpty;
 
     final hasPreviousPlanned = workouts
         .sublist(0, index)
-        .any((w) => w.status == 'planned');
+        .any((w) => w.status == 'planned' || w.status == 'expired');
 
     if ((!hasPreviousPlanned && prevCompleted) ||
-        (index == 0 && workouts[index].status == 'planned')) {
+        (index == 0 &&
+            (workouts[index].status == 'planned' ||
+                workouts[index].status == 'expired'))) {
       return WorkoutStatus.current;
     }
 
@@ -152,7 +157,14 @@ class WorkoutPath extends StatelessWidget {
           node = GestureDetector(
             onTap: () {
               context.pushRoute(
-                WorkoutRoute(name: workout.name, exercises: workout.exercises),
+                WorkoutRoute(
+                  name: workout.name,
+                  exercises: workout.exercises,
+                  isCurrentTraining:
+                      workout.status == 'planned' ||
+                      workout.status == 'expired',
+                  workoutId: workout.workoutId,
+                ),
               );
             },
             child: node,

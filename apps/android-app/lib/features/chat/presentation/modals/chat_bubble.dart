@@ -1,5 +1,6 @@
 import 'package:android_app/constants/app_text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../../../../constants/app_colors.dart';
 import '../../domain/entities/chat_message_entity.dart';
@@ -42,9 +43,26 @@ class ChatMessageBubble extends StatelessWidget {
                   color: isUser ? AppColors.lily : AppColors.messageGrey,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  isUser ? message.message : message.response ?? '',
+                child: isUser
+                    ? Text(
+                  message.message,
                   style: AppTextStyles.textButton,
+                )
+                    : MarkdownBody(
+                  data: message.response ?? '',
+                  styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
+                    p: AppTextStyles.textButton,
+                    h1: AppTextStyles.textButton.copyWith(fontSize: 24, fontWeight: FontWeight.bold),
+                    h2: AppTextStyles.textButton.copyWith(fontSize: 20, fontWeight: FontWeight.bold),
+                    h3: AppTextStyles.textButton.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+                    h4: AppTextStyles.textButton.copyWith(fontSize: 16, fontWeight: FontWeight.bold),
+                    h5: AppTextStyles.textButton.copyWith(fontSize: 14, fontWeight: FontWeight.bold),
+                    h6: AppTextStyles.textButton.copyWith(fontSize: 12, fontWeight: FontWeight.bold),
+                    listBullet: AppTextStyles.textButton,
+                    listBulletPadding: const EdgeInsets.only(left: 4),
+                    unorderedListAlign: WrapAlignment.start,
+                    listIndent: 24,
+                  ),
                 ),
               ),
             ),
