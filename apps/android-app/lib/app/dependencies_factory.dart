@@ -4,6 +4,7 @@ import 'package:android_app/features/init/data/repositories/health_network_repos
 import 'package:android_app/features/init/data/repositories/init_local_repository.dart';
 import 'package:android_app/features/login/data/repositories/login_network_repository.dart';
 import 'package:android_app/features/login/data/repositories/remember_me_local_repository.dart';
+import 'package:android_app/features/path/data/repositories/finish_workout_network_repository.dart';
 import 'package:android_app/features/path/data/repositories/workout_path_network_repository.dart';
 import 'package:android_app/features/settings/data/profile_network_repository.dart';
 import 'package:android_app/features/settings/data/repositories/logout_local_repository.dart';
@@ -20,6 +21,7 @@ class DependenciesFactory {
       logoutRepository: LogoutLocalRepository(prefs),
       workoutPathRepository: WorkoutPathNetworkRepository(),
       profileRepository: ProfileNetworkRepository(),
+      finishWorkoutRepository: FinishWorkoutNetworkRepository(),
     );
   }
 }
