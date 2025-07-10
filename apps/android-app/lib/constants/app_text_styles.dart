@@ -16,8 +16,8 @@ class AppTextStyles {
     return GoogleFonts.arOneSans(
       color: AppColors.grey,
       fontWeight: FontWeight.w200,
-      fontSize: 12,
-      height: 18 / 12,
+      fontSize: 14,
+      height: 22 / 14,
     );
   }
 

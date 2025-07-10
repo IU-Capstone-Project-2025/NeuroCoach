@@ -2,6 +2,7 @@ import 'package:android_app/app/app_router.dart';
 import 'package:android_app/constants/app_colors.dart';
 import 'package:android_app/constants/app_text_styles.dart';
 import 'package:android_app/features/login/domain/bloc/sign_up_bloc.dart';
+import 'package:android_app/uikit/app_dropdown_field.dart';
 import 'package:android_app/uikit/app_text_field.dart';
 import 'package:android_app/uikit/buttons/app_button.dart';
 import 'package:auto_route/auto_route.dart';
@@ -114,7 +115,7 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                     ),
                     SizedBox(height: 36.0),
                     Text(
-                      'Begin your journey or sth',
+                      'Begin your journey into sport',
                       style: AppTextStyles.textButton,
                     ),
                     const SizedBox(height: 16),
@@ -248,27 +249,26 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                       style: AppTextStyles.textButton,
                     ),
                     const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: _selectedGoal,
-                      decoration: InputDecoration(labelText: 'Goal'),
-                      items: goals
-                          .map(
-                            (g) => DropdownMenuItem(value: g, child: Text(g)),
-                          )
-                          .toList(),
-                      onChanged: (val) => setState(() => _selectedGoal = val),
+                    AppDropdownField<String>(
+                      value: _selectedGoal != null
+                          ? LabelValueMapper.toGoalLabel(_selectedGoal!)
+                          : null,
+                      items: LabelValueMapper.goalMap.values.toList(),
+                      onChanged: (label) => setState(() {
+                        _selectedGoal = LabelValueMapper.toGoalValue(label!);
+                      }),
+                      hint: 'Select your goal',
                     ),
                     const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: _selectedTimeframe,
-                      decoration: InputDecoration(labelText: 'Timeframe'),
-                      items: timeframes
-                          .map(
-                            (t) => DropdownMenuItem(value: t, child: Text(t)),
-                          )
-                          .toList(),
-                      onChanged: (val) =>
-                          setState(() => _selectedTimeframe = val),
+                    AppDropdownField<String>(
+                      value: _selectedTimeframe != null
+                          ? LabelValueMapper.toTimeframeLabel(_selectedTimeframe!)
+                          : null,
+                      items: LabelValueMapper.timeframeMap.values.toList(),
+                      onChanged: (label) => setState(() {
+                        _selectedTimeframe = LabelValueMapper.toTimeframeValue(label!);
+                      }),
+                      hint: 'Select the timeframe',
                     ),
                     const SizedBox(height: 16),
                     AppButton(
@@ -299,16 +299,15 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                       style: AppTextStyles.textButton,
                     ),
                     const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: _selectedLevel,
-                      decoration: InputDecoration(labelText: 'Fitness Level'),
-                      items: levels
-                          .map(
-                            (lvl) =>
-                                DropdownMenuItem(value: lvl, child: Text(lvl)),
-                          )
-                          .toList(),
-                      onChanged: (val) => setState(() => _selectedLevel = val),
+                    AppDropdownField<String>(
+                      value: _selectedLevel != null
+                          ? LabelValueMapper.toLevelLabel(_selectedLevel!)
+                          : null,
+                      items: LabelValueMapper.levelMap.values.toList(),
+                      onChanged: (label) => setState(() {
+                        _selectedLevel = LabelValueMapper.toLevelValue(label!);
+                      }),
+                      hint: 'Select your level',
                     ),
                     const SizedBox(height: 8),
                     AppTextField(
@@ -455,4 +454,40 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
       ),
     );
   }
+}
+
+class LabelValueMapper {
+  static final Map<String, String> goalMap = {
+    'weight_loss': 'Weight Loss',
+    'muscle_gain': 'Muscle Gain',
+    'endurance': 'Endurance',
+    'flexibility': 'Flexibility',
+    'general_fitness': 'General Fitness',
+  };
+
+  static final Map<String, String> timeframeMap = {
+    '1month': '1 Month',
+    '3months': '3 Months',
+    '6months': '6 Months',
+    '1year': '1 Year',
+  };
+
+  static final Map<String, String> levelMap = {
+    'beginner': 'Beginner',
+    'intermediate': 'Intermediate',
+    'advanced': 'Advanced',
+  };
+
+  static String toGoalLabel(String value) => goalMap[value] ?? value;
+  static String toTimeframeLabel(String value) => timeframeMap[value] ?? value;
+  static String toLevelLabel(String value) => levelMap[value] ?? value;
+
+  static String toGoalValue(String label) =>
+      goalMap.entries.firstWhere((e) => e.value == label).key;
+
+  static String toTimeframeValue(String label) =>
+      timeframeMap.entries.firstWhere((e) => e.value == label).key;
+
+  static String toLevelValue(String label) =>
+      levelMap.entries.firstWhere((e) => e.value == label).key;
 }
