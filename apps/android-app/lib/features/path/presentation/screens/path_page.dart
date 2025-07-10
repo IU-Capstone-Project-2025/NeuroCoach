@@ -22,6 +22,55 @@ class PathPage extends StatelessWidget {
         title: Text('Training'),
         titleTextStyle: AppTextStyles.chatTitle,
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () => context.pushRoute(
+              GlossaryRoute(
+                exercises: [
+                  Exercise(
+                    exerciseId: 'ex001',
+                    name: 'Push-Up',
+                    muscleGroup: 'Chest',
+                    sets: 3,
+                    reps: 15,
+                    restSec: 60,
+                    notes: 'Keep your core tight and back straight.',
+                    technique:
+                        'Lower your body until your chest nearly touches the floor, then push back up.',
+                    pictureUrl: 'https://i.pinimg.com/736x/47/72/90/477290deb87fcba55a99c10c41186240.jpg',
+                  ),
+                  Exercise(
+                    exerciseId: 'ex002',
+                    name: 'Squat',
+                    muscleGroup: 'Legs',
+                    sets: 4,
+                    reps: 12,
+                    restSec: 90,
+                    notes:
+                        'Keep knees in line with toes. Don’t let heels lift.',
+                    technique:
+                        'Lower your hips back and down as if sitting in a chair, then drive through your heels to stand.',
+                    pictureUrl: 'https://www.shutterstock.com/image-illustration/bodyweight-squat-thighs-exercise-male-600w-2329917681.jpg',
+                  ),
+                  Exercise(
+                    exerciseId: 'ex003',
+                    name: 'Plank',
+                    muscleGroup: 'Core',
+                    sets: 3,
+                    reps: 1,
+                    // Each rep is a hold
+                    restSec: 45,
+                    notes: 'Maintain a straight line from head to heels.',
+                    technique:
+                        'Hold the plank position with elbows under shoulders and core engaged for 30–60 seconds.',
+                    pictureUrl: 'https://blog.trainerlist.com/wp-content/uploads/2024/07/plankkk.jpg',
+                  ),
+                ],
+              ),
+            ),
+            icon: Icon(Icons.book),
+          ),
+        ],
       ),
       body: BlocBuilder<WorkoutBloc, WorkoutState>(
         builder: (BuildContext context, WorkoutState state) {

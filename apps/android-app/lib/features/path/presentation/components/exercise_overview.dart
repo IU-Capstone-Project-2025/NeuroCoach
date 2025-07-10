@@ -110,6 +110,11 @@ class ExerciseOverview extends StatelessWidget {
                                           "Notes: ${ex.notes}",
                                           style: AppTextStyles.textButton,
                                         ),
+                                        if (ex.pictureUrl != null)
+                                          Image.network(
+                                            ex.pictureUrl!,
+                                            scale: 0.5,
+                                          ),
                                       ]
                                       .map(
                                         (e) => Padding(

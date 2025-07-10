@@ -26,7 +26,7 @@ class AppTextStyles {
       color: Color(0xFFFFFFFF),
       fontWeight: FontWeight.w400,
       fontSize: 18,
-      height: 36 / 18
+      height: 1
     );
   }
 

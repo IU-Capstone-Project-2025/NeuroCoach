@@ -35,6 +35,7 @@ class Exercise {
   final int restSec;
   final String notes;
   final String technique;
+  final String? pictureUrl;
 
   Exercise({
     required this.exerciseId,
@@ -45,6 +46,7 @@ class Exercise {
     required this.restSec,
     required this.notes,
     required this.technique,
+    this.pictureUrl,
   });
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
@@ -57,6 +59,7 @@ class Exercise {
       restSec: json['rest_sec'],
       notes: json['notes'],
       technique: json['technique'],
+      pictureUrl: json['url'] != null ? json['url'] as String : null,
     );
   }
 }
