@@ -5,19 +5,39 @@ This project is covered by various types of tests to ensure code quality and rel
 
 ## Test Structure
 
-### Unit Tests
-- `internal/handlers/handlers_test.go` - tests for HTTP handlers
-- `internal/middleware/auth_test.go` - tests for authentication middleware
-- `internal/middleware/logging_test.go` - tests for logging middleware
-- `internal/services/ai_test.go` - tests for AI service
-- `internal/services/auth_test.go` - tests for authentication service
-- `internal/services/health_test.go` - tests for health service
-- `internal/services/profile_test.go` - tests for profile service
-- `internal/repository/mongodb_test.go` - tests for MongoDB repository
-- `internal/models/models_test.go` - tests for data models
-- `internal/config/config_test.go` - tests for configuration
-- `pkg/utils/crypto_test.go` - tests for cryptographic utilities
-- `pkg/utils/jwt_test.go` - tests for JWT utilities
+### Unit Tests (22 test files)
+**Handlers (6 files)**
+- `internal/handlers/handlers_test.go` - HTTP handler base functionality
+- `internal/handlers/health_test.go` - health check endpoint
+- `internal/handlers/simple_test.go` - JSON responses, error handling
+- `internal/handlers/chat_test.go` - chat endpoints, invalid JSON
+- `internal/handlers/workout_test.go` - workout plan endpoints
+- `internal/handlers/profile_test.go` - profile CRUD endpoints
+
+**Middleware (3 files)**
+- `internal/middleware/auth_test.go` - JWT authentication, token validation
+- `internal/middleware/logging_test.go` - request/response logging
+- `internal/middleware/validation_test.go` - request validation
+
+**Services (6 files)**
+- `internal/services/ai_test.go` - AI service rating functionality
+- `internal/services/auth_test.go` - user registration/login
+- `internal/services/health_test.go` - database connectivity
+- `internal/services/profile_test.go` - profile management
+- `internal/services/openrouter_test.go` - OpenRouter client
+- `internal/services/service_test.go` - base service functionality
+
+**Repository (2 files)**
+- `internal/repository/mongodb_test.go` - MongoDB operations
+- `internal/repository/postgres_test.go` - PostgreSQL operations
+
+**Core (5 files)**
+- `cmd/server/main_test.go` - main application and migrations
+- `internal/models/models_test.go` - data models validation
+- `internal/config/config_test.go` - configuration loading
+- `pkg/utils/crypto_test.go` - password hashing
+- `pkg/utils/jwt_test.go` - JWT token operations
+- `pkg/utils/validation_test.go` - data validation helpers
 
 ### Integration Tests
 - `test_integration.go` - integration tests for API endpoints
@@ -66,6 +86,7 @@ Main components covered by tests:
 
 ### Handlers (HTTP handlers)
 - ✅ Register/Login endpoints
+- ✅ Health check endpoint
 - ✅ Rating endpoint
 - ✅ Error handling
 
@@ -73,6 +94,7 @@ Main components covered by tests:
 - ✅ Authentication middleware
 - ✅ JWT token validation
 - ✅ Logging middleware
+- ✅ Request validation middleware
 - ✅ Request/response tracking
 
 ### Services (Business logic)
@@ -80,13 +102,17 @@ Main components covered by tests:
 - ✅ Authentication service
 - ✅ Health service
 - ✅ Profile service
+- ✅ OpenRouter client
+- ✅ Model switching logic
 - ✅ Error handling
 - ✅ Mock dependencies
 
 ### Repository (Data layer)
 - ✅ MongoDB rating calculation
+- ✅ PostgreSQL user management
 - ✅ Consecutive days algorithm
 - ✅ Level calculation logic
+- ✅ Mock repositories
 
 ### Configuration
 - ✅ Environment variable loading
@@ -97,6 +123,7 @@ Main components covered by tests:
 - ✅ Password hashing/verification
 - ✅ JWT generation/validation
 - ✅ Token expiration handling
+- ✅ Data validation helpers
 
 ### Models (Data models)
 - ✅ Score calculation
