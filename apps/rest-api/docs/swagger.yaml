@@ -1,0 +1,598 @@
+basePath: /
+definitions:
+  models.AuthResponse:
+    properties:
+      email:
+        type: string
+      token:
+        type: string
+    type: object
+  models.ChatHistory:
+    properties:
+      messages:
+        items:
+          $ref: '#/definitions/models.ChatMessage'
+        type: array
+    type: object
+  models.ChatMessage:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      is_user:
+        type: boolean
+      message:
+        type: string
+      response:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.ChatRequest:
+    properties:
+      message:
+        maxLength: 500
+        type: string
+    required:
+    - message
+    type: object
+  models.ChatResponse:
+    properties:
+      response:
+        type: string
+    type: object
+  models.CompleteWorkoutRequest:
+    properties:
+      workout_id:
+        type: string
+    required:
+    - workout_id
+    type: object
+  models.ErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  models.Exercise:
+    properties:
+      exercise_id:
+        type: string
+      muscle_group:
+        type: string
+      name:
+        type: string
+      notes:
+        type: string
+      reps:
+        type: integer
+      rest_sec:
+        type: integer
+      sets:
+        type: integer
+      technique:
+        type: string
+    type: object
+  models.FitnessProfile:
+    properties:
+      age:
+        maximum: 120
+        minimum: 13
+        type: integer
+      available_minutes:
+        maximum: 1000
+        minimum: 30
+        type: integer
+      fitness_level:
+        enum:
+        - beginner
+        - intermediate
+        - advanced
+        type: string
+      goal:
+        enum:
+        - weight_loss
+        - muscle_gain
+        - endurance
+        - flexibility
+        - general_fitness
+        type: string
+      health_issues:
+        items:
+          type: string
+        type: array
+      height:
+        type: number
+      timeframe:
+        enum:
+        - 1month
+        - 3months
+        - 6months
+        - 1year
+        type: string
+      updated_at:
+        type: string
+      weight:
+        type: number
+    required:
+    - age
+    - available_minutes
+    - fitness_level
+    - goal
+    - height
+    - timeframe
+    - weight
+    type: object
+  models.HealthCheckResponse:
+    properties:
+      status:
+        type: string
+      version:
+        type: string
+    type: object
+  models.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.RegenerateWorkoutPlanRequest:
+    properties:
+      comments:
+        maxLength: 1000
+        type: string
+    required:
+    - comments
+    type: object
+  models.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.UserProgress:
+    properties:
+      completed_workouts:
+        items:
+          type: string
+        type: array
+      consecutive_days:
+        type: integer
+      id:
+        type: string
+      last_workout_date:
+        type: string
+      level:
+        type: string
+      total_workouts:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.UserRating:
+    properties:
+      max_consecutive:
+        type: integer
+      score:
+        type: integer
+      total_workouts:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  models.Workout:
+    properties:
+      description:
+        type: string
+      exercises:
+        items:
+          $ref: '#/definitions/models.Exercise'
+        type: array
+      name:
+        type: string
+      scheduled_date:
+        type: string
+      status:
+        type: string
+      workout_id:
+        type: string
+    type: object
+  models.WorkoutPlan:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      status:
+        type: boolean
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      workouts:
+        items:
+          $ref: '#/definitions/models.Workout'
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: REST API for the NeuroCoach fitness application
+  title: NeuroCoach API
+  version: "1.0"
+paths:
+  /api/chat:
+    post:
+      consumes:
+      - application/json
+      description: Send message to AI assistant
+      parameters:
+      - description: Chat message
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ChatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ChatResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Chat with AI
+      tags:
+      - chat
+  /api/chat/history:
+    get:
+      description: Get user's chat history with AI
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ChatHistory'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get chat history
+      tags:
+      - chat
+  /api/complete-workout:
+    post:
+      consumes:
+      - application/json
+      description: Mark a workout as completed
+      parameters:
+      - description: Workout completion data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CompleteWorkoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Complete workout
+      tags:
+      - workout
+  /api/generate-plan:
+    post:
+      description: Generate a new workout plan based on user profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.WorkoutPlan'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Generate workout plan
+      tags:
+      - workout
+  /api/motivation:
+    get:
+      description: Get AI-generated motivational message
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get motivational message
+      tags:
+      - motivation
+  /api/profile:
+    get:
+      description: Get user's fitness profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FitnessProfile'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get fitness profile
+      tags:
+      - profile
+    post:
+      consumes:
+      - application/json
+      description: Save or update user's fitness profile
+      parameters:
+      - description: Fitness profile data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.FitnessProfile'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Save fitness profile
+      tags:
+      - profile
+  /api/progress:
+    get:
+      description: Get user's workout progress and statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserProgress'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user progress
+      tags:
+      - progress
+  /api/rating:
+    get:
+      description: Get user rating and leaderboard
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.UserRating'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user rating
+      tags:
+      - rating
+  /api/regenerate-plan:
+    post:
+      consumes:
+      - application/json
+      description: Regenerate workout plan based on user feedback
+      parameters:
+      - description: Regeneration feedback
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegenerateWorkoutPlanRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.WorkoutPlan'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Regenerate workout plan
+      tags:
+      - workout
+  /api/workout-plan:
+    get:
+      description: Get user's current workout plan
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.WorkoutPlan'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get workout plan
+      tags:
+      - workout
+  /health:
+    get:
+      description: Check API and database health
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HealthCheckResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Health check
+      tags:
+      - health
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Login user
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account
+      parameters:
+      - description: Registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - auth
+securityDefinitions:
+  BearerAuth:
+    description: 'Bearer token authentication. Format: Bearer {token}'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

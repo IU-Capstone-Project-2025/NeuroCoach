@@ -151,3 +151,8 @@ format: ## Format code
 	@echo "Formatting code..."
 	@go fmt ./...
 	@goimports -w . || echo "Install goimports: go install golang.org/x/tools/cmd/goimports@latest"
+
+.PHONY: swagger
+swagger: ## Generate Swagger documentation
+	@echo "Generating Swagger docs..."
+	@swag init -g cmd/server/main.go -o docs || echo "Install swag: go install github.com/swaggo/swag/cmd/swag@latest"
