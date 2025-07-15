@@ -64,7 +64,7 @@ func (m *mockAuthRepo) Close() error {
 
 func TestAuthService_Register_Success(t *testing.T) {
 	repo := newMockAuthRepo()
-	service := NewAuthService(repo, "test-secret", time.Hour)
+	service := NewAuthService(repo, "test-secret", time.Hour, 7*24*time.Hour)
 
 	req := models.RegisterRequest{
 		Email:    "test@example.com",
@@ -85,14 +85,14 @@ func TestAuthService_Register_Success(t *testing.T) {
 		t.Errorf("Expected email %s, got %s", req.Email, resp.Email)
 	}
 
-	if resp.Token == "" {
-		t.Error("Expected non-empty token")
+	if resp.AccessToken == "" {
+		t.Error("Expected non-empty access token")
 	}
 }
 
 func TestAuthService_Register_DuplicateEmail(t *testing.T) {
 	repo := newMockAuthRepo()
-	service := NewAuthService(repo, "test-secret", time.Hour)
+	service := NewAuthService(repo, "test-secret", time.Hour, 7*24*time.Hour)
 
 	req := models.RegisterRequest{
 		Email:    "test@example.com",
@@ -120,7 +120,7 @@ func TestAuthService_Register_DuplicateEmail(t *testing.T) {
 
 func TestAuthService_Login_Success(t *testing.T) {
 	repo := newMockAuthRepo()
-	service := NewAuthService(repo, "test-secret", time.Hour)
+	service := NewAuthService(repo, "test-secret", time.Hour, 7*24*time.Hour)
 
 	// Register user first
 	registerReq := models.RegisterRequest{
@@ -152,14 +152,14 @@ func TestAuthService_Login_Success(t *testing.T) {
 		t.Errorf("Expected email %s, got %s", loginReq.Email, resp.Email)
 	}
 
-	if resp.Token == "" {
-		t.Error("Expected non-empty token")
+	if resp.AccessToken == "" {
+		t.Error("Expected non-empty access token")
 	}
 }
 
 func TestAuthService_Login_InvalidCredentials(t *testing.T) {
 	repo := newMockAuthRepo()
-	service := NewAuthService(repo, "test-secret", time.Hour)
+	service := NewAuthService(repo, "test-secret", time.Hour, 7*24*time.Hour)
 
 	// Register user first
 	registerReq := models.RegisterRequest{
@@ -191,7 +191,7 @@ func TestAuthService_Login_InvalidCredentials(t *testing.T) {
 
 func TestAuthService_Login_UserNotFound(t *testing.T) {
 	repo := newMockAuthRepo()
-	service := NewAuthService(repo, "test-secret", time.Hour)
+	service := NewAuthService(repo, "test-secret", time.Hour, 7*24*time.Hour)
 
 	loginReq := models.LoginRequest{
 		Email:    "nonexistent@example.com",

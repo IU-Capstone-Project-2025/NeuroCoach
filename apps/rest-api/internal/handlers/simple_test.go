@@ -13,7 +13,7 @@ import (
 func TestRespondWithJSON_Extended(t *testing.T) {
 	w := httptest.NewRecorder()
 	data := models.AuthResponse{
-		Token: "test-token",
+		AccessToken: "test-token",
 		Email: "test@example.com",
 	}
 
@@ -34,8 +34,8 @@ func TestRespondWithJSON_Extended(t *testing.T) {
 		t.Errorf("Failed to unmarshal response: %v", err)
 	}
 
-	if response.Token != data.Token {
-		t.Errorf("Expected token %s, got %s", data.Token, response.Token)
+	if response.AccessToken != data.AccessToken {
+		t.Errorf("Expected token %s, got %s", data.AccessToken, response.AccessToken)
 	}
 }
 

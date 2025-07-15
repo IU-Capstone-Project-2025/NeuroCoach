@@ -18,6 +18,18 @@ func GenerateJWT(userID int, email, secret string, expiration time.Duration) (st
 	return token.SignedString([]byte(secret))
 }
 
+// GenerateRefreshToken creates a refresh token with longer expiration
+func GenerateRefreshToken(userID int, secret string, expiration time.Duration) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"type":    "refresh",
+		"exp":     time.Now().Add(expiration).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(secret))
+}
+
 // ValidateJWT parses and validates a JWT token
 func ValidateJWT(tokenString, secret string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {

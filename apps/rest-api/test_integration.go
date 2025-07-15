@@ -39,7 +39,7 @@ func TestRatingEndpointIntegration(t *testing.T) {
 	mockMongoRepo := &mockMongoRepo{}
 
 	// Initialize services
-	authService := services.NewAuthService(mockPostgresRepo, cfg.JWTSecret, cfg.JWTExpiration)
+	authService := services.NewAuthService(mockPostgresRepo, cfg.JWTSecret, cfg.JWTExpiration, 7*24*time.Hour)
 	profileService := services.NewProfileService(mockPostgresRepo)
 	aiService := services.NewAIService(mockPostgresRepo, mockMongoRepo, "")
 	healthService := services.NewHealthService(mockPostgresRepo)
