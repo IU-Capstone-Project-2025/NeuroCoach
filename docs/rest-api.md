@@ -8,9 +8,95 @@ The NeuroCoach API provides endpoints for user management, fitness profiles, AI 
 - Production: `https://api.neurocoach.com`
 
 ## Authentication
-The API uses JWT Bearer token authentication. Include the token in the Authorization header:
+The API uses JWT Bearer token authentication with access/refresh token pattern:
+- **Access Token**: Short-lived (15 minutes) for API requests
+- **Refresh Token**: Long-lived (7 days) to get new access tokens
+
+Include the access token in the Authorization header:
 ```
-Authorization: Bearer <your_jwt_token>
+Authorization: Bearer <your_access_token>
+```
+
+## Frontend Token Management
+
+### Token Storage
+```javascript
+// Store tokens after login/register
+localStorage.setItem('access_token', response.access_token);
+localStorage.setItem('refresh_token', response.refresh_token);
+localStorage.setItem('token_expires_at', Date.now() + (response.expires_in * 1000));
+```
+
+### Token Validation (Proactive)
+```javascript
+function isTokenValid() {
+  const expiresAt = localStorage.getItem('token_expires_at');
+  const buffer = 60000; // 1 minute buffer
+  return Date.now() < (parseInt(expiresAt) - buffer);
+}
+
+async function getValidToken() {
+  if (isTokenValid()) {
+    return localStorage.getItem('access_token');
+  }
+  return await refreshToken();
+}
+```
+
+### Token Refresh
+```javascript
+async function refreshToken() {
+  const refreshToken = localStorage.getItem('refresh_token');
+  
+  const response = await fetch('/refresh', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh_token: refreshToken })
+  });
+  
+  if (response.ok) {
+    const data = await response.json();
+    localStorage.setItem('access_token', data.access_token);
+    localStorage.setItem('refresh_token', data.refresh_token);
+    localStorage.setItem('token_expires_at', Date.now() + (data.expires_in * 1000));
+    return data.access_token;
+  }
+  
+  // Refresh failed - redirect to login
+  window.location.href = '/login';
+  return null;
+}
+```
+
+### API Call with Auto-Refresh
+```javascript
+async function apiCall(url, options = {}) {
+  const token = await getValidToken();
+  
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      ...options.headers
+    }
+  });
+  
+  // Handle 401 (token expired)
+  if (response.status === 401) {
+    const newToken = await refreshToken();
+    if (newToken) {
+      return fetch(url, {
+        ...options,
+        headers: {
+          'Authorization': `Bearer ${newToken}`,
+          ...options.headers
+        }
+      });
+    }
+  }
+  
+  return response;
+}
 ```
 
 ## Endpoints
@@ -50,13 +136,16 @@ POST /register
 **Response** (201 Created)
 ```json
 {
-  "token": "jwt_token_here",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "Bearer",
+  "expires_in": 900,
   "email": "user@example.com"
 }
 ```
 
 #### Login
-Authenticate user and get JWT token.
+Authenticate user and get JWT tokens.
 
 ```http
 POST /login
@@ -73,7 +162,35 @@ POST /login
 **Response** (200 OK)
 ```json
 {
-  "token": "jwt_token_here",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "Bearer",
+  "expires_in": 900,
+  "email": "user@example.com"
+}
+```
+
+#### Refresh Token
+Get new access token using refresh token.
+
+```http
+POST /refresh
+```
+
+**Request Body**
+```json
+{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Response** (200 OK)
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "Bearer",
+  "expires_in": 900,
   "email": "user@example.com"
 }
 ```

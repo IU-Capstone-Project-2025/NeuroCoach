@@ -46,7 +46,7 @@ func main() {
 	}
 
 	// Initialize services
-	authService := services.NewAuthService(postgresRepo, cfg.JWTSecret, cfg.JWTExpiration)
+	authService := services.NewAuthService(postgresRepo, cfg.JWTSecret, cfg.JWTExpiration, cfg.RefreshExpiration)
 	profileService := services.NewProfileService(postgresRepo)
 	aiService := services.NewAIService(postgresRepo, mongoRepo, cfg.OpenRouterKey)
 	healthService := services.NewHealthService(postgresRepo)
@@ -65,6 +65,7 @@ func main() {
 	r.HandleFunc("/health", h.HealthCheck).Methods("GET")
 	r.HandleFunc("/register", h.Register).Methods("POST")
 	r.HandleFunc("/login", h.Login).Methods("POST")
+	r.HandleFunc("/refresh", h.RefreshToken).Methods("POST")
 
 	// Authenticated routes
 	authRouter := r.PathPrefix("/api").Subrouter()
