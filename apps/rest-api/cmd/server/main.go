@@ -87,6 +87,7 @@ func main() {
 		authRouter.HandleFunc("/media/{media_id}", h.DeleteExerciseMedia).Methods("DELETE")
 		authRouter.HandleFunc("/rating", h.GetRating).Methods("GET")
 		authRouter.HandleFunc("/motivation", h.GetMotivationalMessage).Methods("GET")
+		authRouter.HandleFunc("/download", handlers.ApkDownloadHandler).Methods("GET")
 	}
 
 	// Start server
