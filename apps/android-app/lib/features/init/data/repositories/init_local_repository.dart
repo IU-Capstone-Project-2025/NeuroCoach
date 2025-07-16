@@ -22,4 +22,17 @@ class InitLocalRepository extends InitRepository {
     return await _preferences.remove('jwt');
   }
 
+  @override
+  Future<String> getRefreshToken() async {
+    if (kDebugMode) print('Started fetching refresh token from repo');
+    final String? token = _preferences.getString('refresh');
+    return token ?? '';
+  }
+
+  @override
+  Future<bool> removeRefreshToken() async {
+    if (kDebugMode) print('Deleting Refresh token from prefs');
+    return await _preferences.remove('refresh');
+  }
+
 }

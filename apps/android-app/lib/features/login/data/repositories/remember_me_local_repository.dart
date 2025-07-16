@@ -8,8 +8,9 @@ class RememberMeLocalRepository extends RememberMeRepository {
   final SharedPreferences _preferences;
 
   @override
-  Future<void> rememberUser({required String jwtToken, required String email}) async {
+  Future<void> rememberUser({required String jwtToken, required String refreshToken, required String email}) async {
     await _preferences.setString('jwt', jwtToken);
+    await _preferences.setString('refresh', refreshToken);
     await _preferences.setString('email', email);
   }
 }
