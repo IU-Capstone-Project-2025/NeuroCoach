@@ -13,9 +13,9 @@ import (
 
 type AuthService struct {
 	BaseService
-	JWTSecret        string
-	JWTExpiry        time.Duration
-	RefreshExpiry    time.Duration
+	JWTSecret     string
+	JWTExpiry     time.Duration
+	RefreshExpiry time.Duration
 }
 
 func NewAuthService(repo repository.Repository, jwtSecret string, jwtExpiry, refreshExpiry time.Duration) *AuthService {
