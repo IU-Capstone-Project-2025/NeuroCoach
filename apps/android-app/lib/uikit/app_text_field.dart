@@ -26,13 +26,17 @@ class AppTextField extends StatelessWidget {
       obscureText: isPassword,
       keyboardType: inputType,
       decoration: InputDecoration(
-        prefixIcon: Icon(prefixIcon, color: AppColors.grey, size: 16),
-        hintText: hint,
+        prefixIcon: prefixIcon != null
+            ? Icon(prefixIcon, color: AppColors.grey, size: 16)
+            : null,
         border: OutlineInputBorder(
           borderSide: BorderSide(color: AppColors.grey),
           borderRadius: BorderRadius.circular(16.0),
         ),
-        hintStyle: AppTextStyles.textField
+        contentPadding: EdgeInsets.only(left: 16.0, top: 8, bottom: 8),
+        hint: hint != null
+            ? Text(hint!, style: AppTextStyles.textField)
+            : null,
       ),
       style: AppTextStyles.textButton,
     );

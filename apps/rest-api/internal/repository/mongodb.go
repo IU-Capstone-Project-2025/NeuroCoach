@@ -19,6 +19,7 @@ type MongoDBRepository struct {
 	shortPlanCollection  *mongo.Collection
 	completionCollection *mongo.Collection
 	progressCollection   *mongo.Collection
+	mediaCollection      *mongo.Collection
 }
 
 func NewMongoDBRepository(uri, dbName string) (MongoDBRep, error) {
@@ -44,6 +45,7 @@ func NewMongoDBRepository(uri, dbName string) (MongoDBRep, error) {
 		shortPlanCollection:  db.Collection("short_plans"),
 		completionCollection: db.Collection("workout_completions"),
 		progressCollection:   db.Collection("user_progress"),
+		mediaCollection:      db.Collection("exercise_media"),
 	}, nil
 }
 
@@ -420,4 +422,39 @@ func (m *MongoDBRepository) getMaxConsecutiveDays(ctx context.Context, userID in
 	}
 
 	return maxConsecutive
+}
+
+// Exercise media operations
+func (m *MongoDBRepository) SaveExerciseMedia(ctx context.Context, media *models.ExerciseMedia) error {
+	media.CreatedAt = time.Now()
+	_, err := m.mediaCollection.InsertOne(ctx, media)
+	return err
+}
+
+func (m *MongoDBRepository) GetAllExerciseMedia(ctx context.Context) ([]models.ExerciseMedia, error) {
+	cursor, err := m.mediaCollection.Find(
+		ctx,
+		bson.M{},
+		options.Find().SetSort(bson.M{"created_at": -1}),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var media []models.ExerciseMedia
+	if err := cursor.All(ctx, &media); err != nil {
+		return nil, err
+	}
+	return media, nil
+}
+
+func (m *MongoDBRepository) DeleteExerciseMedia(ctx context.Context, mediaID string) error {
+	objID, err := primitive.ObjectIDFromHex(mediaID)
+	if err != nil {
+		return err
+	}
+
+	_, err = m.mediaCollection.DeleteOne(ctx, bson.M{"_id": objID})
+	return err
 }

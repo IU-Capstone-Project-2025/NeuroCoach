@@ -32,6 +32,16 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const ChatPage(),
       );
     },
+    GlossaryRoute.name: (routeData) {
+      final args = routeData.argsAs<GlossaryRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: GlossaryPage(
+          key: args.key,
+          exercises: args.exercises,
+        ),
+      );
+    },
     HomeRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -74,8 +84,10 @@ abstract class _$AppRouter extends RootStackRouter {
         routeData: routeData,
         child: WorkoutPage(
           key: args.key,
+          workoutId: args.workoutId,
           name: args.name,
           exercises: args.exercises,
+          isCurrentTraining: args.isCurrentTraining,
         ),
       );
     },
@@ -137,6 +149,44 @@ class ChatRoute extends PageRouteInfo<void> {
   static const String name = 'ChatRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [GlossaryPage]
+class GlossaryRoute extends PageRouteInfo<GlossaryRouteArgs> {
+  GlossaryRoute({
+    Key? key,
+    required List<Exercise> exercises,
+    List<PageRouteInfo>? children,
+  }) : super(
+          GlossaryRoute.name,
+          args: GlossaryRouteArgs(
+            key: key,
+            exercises: exercises,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'GlossaryRoute';
+
+  static const PageInfo<GlossaryRouteArgs> page =
+      PageInfo<GlossaryRouteArgs>(name);
+}
+
+class GlossaryRouteArgs {
+  const GlossaryRouteArgs({
+    this.key,
+    required this.exercises,
+  });
+
+  final Key? key;
+
+  final List<Exercise> exercises;
+
+  @override
+  String toString() {
+    return 'GlossaryRouteArgs{key: $key, exercises: $exercises}';
+  }
 }
 
 /// generated route for
@@ -228,15 +278,19 @@ class SettingsRoute extends PageRouteInfo<void> {
 class WorkoutRoute extends PageRouteInfo<WorkoutRouteArgs> {
   WorkoutRoute({
     Key? key,
+    required String workoutId,
     required String name,
     required List<Exercise> exercises,
+    required bool isCurrentTraining,
     List<PageRouteInfo>? children,
   }) : super(
           WorkoutRoute.name,
           args: WorkoutRouteArgs(
             key: key,
+            workoutId: workoutId,
             name: name,
             exercises: exercises,
+            isCurrentTraining: isCurrentTraining,
           ),
           initialChildren: children,
         );
@@ -250,19 +304,25 @@ class WorkoutRoute extends PageRouteInfo<WorkoutRouteArgs> {
 class WorkoutRouteArgs {
   const WorkoutRouteArgs({
     this.key,
+    required this.workoutId,
     required this.name,
     required this.exercises,
+    required this.isCurrentTraining,
   });
 
   final Key? key;
+
+  final String workoutId;
 
   final String name;
 
   final List<Exercise> exercises;
 
+  final bool isCurrentTraining;
+
   @override
   String toString() {
-    return 'WorkoutRouteArgs{key: $key, name: $name, exercises: $exercises}';
+    return 'WorkoutRouteArgs{key: $key, workoutId: $workoutId, name: $name, exercises: $exercises, isCurrentTraining: $isCurrentTraining}';
   }
 }
 

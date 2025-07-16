@@ -2,6 +2,7 @@ import 'package:android_app/app/app_router.dart';
 import 'package:android_app/constants/app_colors.dart';
 import 'package:android_app/constants/app_text_styles.dart';
 import 'package:android_app/features/login/domain/bloc/sign_up_bloc.dart';
+import 'package:android_app/uikit/app_dropdown_field.dart';
 import 'package:android_app/uikit/app_text_field.dart';
 import 'package:android_app/uikit/buttons/app_button.dart';
 import 'package:auto_route/auto_route.dart';
@@ -26,12 +27,11 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
   late final TextEditingController _heightController;
   late final TextEditingController _weightController;
   late final TextEditingController _minutesController;
+  late final TextEditingController _hoursController;
   late final TextEditingController _healthIssuesController;
-
   String? _selectedGoal;
   String? _selectedTimeframe;
   String? _selectedLevel;
-
   final goals = [
     'weight_loss',
     'muscle_gain',
@@ -50,6 +50,7 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
     _heightController = TextEditingController();
     _weightController = TextEditingController();
     _minutesController = TextEditingController();
+    _hoursController = TextEditingController();
     _healthIssuesController = TextEditingController();
     super.initState();
   }
@@ -60,15 +61,103 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
     _heightController.dispose();
     _weightController.dispose();
     _minutesController.dispose();
+    _hoursController.dispose();
     _healthIssuesController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
+  void _showError(BuildContext context, String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  bool _validateEmail(String email) {
+    final emailRegExp = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    return emailRegExp.hasMatch(email);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        centerTitle: true,
+        titleTextStyle: AppTextStyles.chatTitle,
+        backgroundColor: Colors.transparent,
+        actions: [
+          BlocBuilder<SignUpBloc, SignUpState>(
+            builder: (context, state) {
+              if ((state is! SignUpStateInitial) &&
+                  (state is! SignUpStateFinish)) {
+                return TextButton(
+                  onPressed: () =>
+                      context.router.replace(AuthRoute(isSignUp: false)),
+                  child: Text('To Login'),
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            },
+          ),
+        ],
+        title: BlocBuilder<SignUpBloc, SignUpState>(
+          builder: (context, state) {
+            if ((state is! SignUpStateInitial) &&
+                (state is! SignUpStateFinish)) {
+              final int currentStep = state.step;
+              final int totalSteps = 6;
+              final double progress = currentStep / totalSteps;
+              final String percentage = '${(progress * 100).round()}%';
+
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                constraints: const BoxConstraints(minWidth: 180, maxWidth: 250),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0, end: progress),
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                        builder: (context, animatedProgress, _) {
+                          return LinearProgressIndicator(
+                            value: animatedProgress,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).scaffoldBackgroundColor,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.lily,
+                            ),
+                            minHeight: 20,
+                          );
+                        },
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Center(
+                        child: Text(
+                          percentage,
+                          style: AppTextStyles.chatTitle.copyWith(height: 1),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            } else {
+              return const SizedBox.shrink();
+            }
+          },
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: BlocBuilder<SignUpBloc, SignUpState>(
@@ -88,18 +177,9 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                       child: Image.asset('assets/robot.png'),
                     ),
                     SizedBox(height: 36.0),
-                    AppTextField(
-                      controller: _emailController,
-                      prefixIcon: Icons.person,
-                      inputType: TextInputType.emailAddress,
-                      hint: 'Email',
-                    ),
-                    const SizedBox(height: 8.0),
-                    AppTextField(
-                      controller: _passwordController,
-                      prefixIcon: Icons.lock,
-                      isPassword: true,
-                      hint: 'Password',
+                    Text(
+                      'Begin your journey into sport',
+                      style: AppTextStyles.textButton,
                     ),
                     const SizedBox(height: 16),
                     BlocBuilder<SignUpBloc, SignUpState>(
@@ -108,16 +188,9 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                         return SizedBox(
                           width: double.infinity,
                           child: AppButton(
-                            onPressed: isLoading
-                                ? null
-                                : () {
-                                    final email = _emailController.text.trim();
-                                    final password = _passwordController.text
-                                        .trim();
-                                    context.read<SignUpBloc>().add(
-                                      SignUpEventStartSignup(email, password),
-                                    );
-                                  },
+                            onPressed: () => context.read<SignUpBloc>().add(
+                              SignUpEventStartSignup(),
+                            ),
                             padding: EdgeInsetsGeometry.symmetric(
                               horizontal: 16,
                             ),
@@ -239,27 +312,30 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                       style: AppTextStyles.textButton,
                     ),
                     const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: _selectedGoal,
-                      decoration: InputDecoration(labelText: 'Goal'),
-                      items: goals
-                          .map(
-                            (g) => DropdownMenuItem(value: g, child: Text(g)),
-                          )
-                          .toList(),
-                      onChanged: (val) => setState(() => _selectedGoal = val),
+                    AppDropdownField<String>(
+                      value: _selectedGoal != null
+                          ? LabelValueMapper.toGoalLabel(_selectedGoal!)
+                          : null,
+                      items: LabelValueMapper.goalMap.values.toList(),
+                      onChanged: (label) => setState(() {
+                        _selectedGoal = LabelValueMapper.toGoalValue(label!);
+                      }),
+                      hint: 'Select your goal',
                     ),
                     const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: _selectedTimeframe,
-                      decoration: InputDecoration(labelText: 'Timeframe'),
-                      items: timeframes
-                          .map(
-                            (t) => DropdownMenuItem(value: t, child: Text(t)),
-                          )
-                          .toList(),
-                      onChanged: (val) =>
-                          setState(() => _selectedTimeframe = val),
+                    AppDropdownField<String>(
+                      value: _selectedTimeframe != null
+                          ? LabelValueMapper.toTimeframeLabel(
+                              _selectedTimeframe!,
+                            )
+                          : null,
+                      items: LabelValueMapper.timeframeMap.values.toList(),
+                      onChanged: (label) => setState(() {
+                        _selectedTimeframe = LabelValueMapper.toTimeframeValue(
+                          label!,
+                        );
+                      }),
+                      hint: 'Select the timeframe',
                     ),
                     const SizedBox(height: 16),
                     AppButton(
@@ -282,58 +358,76 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                 );
 
               case SignUpStateGetLevelAvailableTime():
+
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Fitness level & workout duration',
+                      'Fitness level & available time per week',
                       style: AppTextStyles.textButton,
                     ),
                     const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: _selectedLevel,
-                      decoration: InputDecoration(labelText: 'Fitness Level'),
-                      items: levels
-                          .map(
-                            (lvl) =>
-                                DropdownMenuItem(value: lvl, child: Text(lvl)),
-                          )
-                          .toList(),
-                      onChanged: (val) => setState(() => _selectedLevel = val),
+                    AppDropdownField<String>(
+                      value: _selectedLevel != null
+                          ? LabelValueMapper.toLevelLabel(_selectedLevel!)
+                          : null,
+                      items: LabelValueMapper.levelMap.values.toList(),
+                      onChanged: (label) => setState(() {
+                        _selectedLevel = LabelValueMapper.toLevelValue(label!);
+                      }),
+                      hint: 'Select your level',
                     ),
                     const SizedBox(height: 8),
-                    AppTextField(
-                      controller: _minutesController,
-                      inputType: TextInputType.number,
-                      hint: 'Minutes per workout (30–1000)',
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppTextField(
+                            controller: _hoursController,
+                            inputType: TextInputType.number,
+                            hint: 'Hours (0–16)',
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: AppTextField(
+                            controller: _minutesController,
+                            inputType: TextInputType.number,
+                            hint: 'Minutes (0–59)',
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     AppButton(
                       text: 'Next',
                       onPressed: () {
-                        final minutes = int.tryParse(
-                          _minutesController.text.trim(),
-                        );
+                        final hours =
+                            int.tryParse(_hoursController.text.trim()) ?? 0;
+                        final minutes =
+                            int.tryParse(_minutesController.text.trim()) ??
+                            0;
+                        final totalMinutes = hours * 60 + minutes;
+
                         if (_selectedLevel != null &&
-                            minutes != null &&
-                            minutes >= 30 &&
-                            minutes <= 1000) {
+                            totalMinutes >= 30 &&
+                            totalMinutes <= 1000) {
                           context.read<SignUpBloc>().add(
                             SignUpEventGetLevelAvailableTime(
                               _selectedLevel!,
-                              minutes,
+                              totalMinutes,
                             ),
                           );
                         } else {
                           _showError(
                             context,
-                            'Please select level and valid minutes',
+                            'Please select a level and enter between 30 and 1000 total minutes.',
                           );
                         }
                       },
                     ),
                   ],
                 );
+
               case SignUpStateGetHealthIssues():
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -349,7 +443,7 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                     ),
                     const SizedBox(height: 16),
                     AppButton(
-                      text: 'Finish Sign Up',
+                      text: 'Next',
                       onPressed: () {
                         final issues = _healthIssuesController.text
                             .split(',')
@@ -357,7 +451,76 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                             .where((e) => e.isNotEmpty)
                             .toList();
                         context.read<SignUpBloc>().add(
-                          SignUpEventFinish(issues),
+                          SignUpEventGetHealthIssues(issues),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              case SignUpStateGetCredentials():
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Finally, let us get your credentials',
+                      style: AppTextStyles.textButton,
+                    ),
+                    const SizedBox(height: 12),
+                    AppTextField(
+                      controller: _emailController,
+                      prefixIcon: Icons.person,
+                      inputType: TextInputType.emailAddress,
+                      hint: 'Email',
+                    ),
+                    const SizedBox(height: 8.0),
+                    AppTextField(
+                      controller: _passwordController,
+                      prefixIcon: Icons.lock,
+                      isPassword: true,
+                      hint: 'Password',
+                    ),
+                    const SizedBox(height: 16),
+                    BlocBuilder<SignUpBloc, SignUpState>(
+                      builder: (context, state) {
+                        final isLoading = state is LoginStateLoading;
+                        return SizedBox(
+                          width: double.infinity,
+                          child: AppButton(
+                            onPressed: isLoading
+                                ? null
+                                : () {
+                                    if (_emailController.text.isNotEmpty &&
+                                        _passwordController.text.isNotEmpty) {
+                                      if (_validateEmail(
+                                        _emailController.text,
+                                      )) {
+                                        final email = _emailController.text
+                                            .trim();
+                                        final password = _passwordController
+                                            .text
+                                            .trim();
+                                        context.read<SignUpBloc>().add(
+                                          SignUpEventFinish(email, password),
+                                        );
+                                      } else {
+                                        _showError(
+                                          context,
+                                          'Please enter valid email',
+                                        );
+                                      }
+                                    } else {
+                                      _showError(
+                                        context,
+                                        'Please enter both email and password',
+                                      );
+                                    }
+                                  },
+                            padding: EdgeInsetsGeometry.symmetric(
+                              horizontal: 16,
+                            ),
+                            isDisabled: isLoading,
+                            text: 'Finish sign up',
+                          ),
                         );
                       },
                     ),
@@ -386,8 +549,42 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
       ),
     );
   }
+}
 
-  void _showError(BuildContext context, String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  }
+class LabelValueMapper {
+  static final Map<String, String> goalMap = {
+    'weight_loss': 'Weight Loss',
+    'muscle_gain': 'Muscle Gain',
+    'endurance': 'Endurance',
+    'flexibility': 'Flexibility',
+    'general_fitness': 'General Fitness',
+  };
+
+  static final Map<String, String> timeframeMap = {
+    '1month': '1 Month',
+    '3months': '3 Months',
+    '6months': '6 Months',
+    '1year': '1 Year',
+  };
+
+  static final Map<String, String> levelMap = {
+    'beginner': 'Beginner',
+    'intermediate': 'Intermediate',
+    'advanced': 'Advanced',
+  };
+
+  static String toGoalLabel(String value) => goalMap[value] ?? value;
+
+  static String toTimeframeLabel(String value) => timeframeMap[value] ?? value;
+
+  static String toLevelLabel(String value) => levelMap[value] ?? value;
+
+  static String toGoalValue(String label) =>
+      goalMap.entries.firstWhere((e) => e.value == label).key;
+
+  static String toTimeframeValue(String label) =>
+      timeframeMap.entries.firstWhere((e) => e.value == label).key;
+
+  static String toLevelValue(String label) =>
+      levelMap.entries.firstWhere((e) => e.value == label).key;
 }

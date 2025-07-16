@@ -58,13 +58,14 @@ func main() {
 	}
 
 	// Initialize services
-	authService := services.NewAuthService(postgresRepo, cfg.JWTSecret, cfg.JWTExpiration)
+	authService := services.NewAuthService(postgresRepo, cfg.JWTSecret, cfg.JWTExpiration, cfg.RefreshExpiration)
 	profileService := services.NewProfileService(postgresRepo)
 	aiService := services.NewAIService(postgresRepo, mongoRepo, cfg.OpenRouterKey)
 	healthService := services.NewHealthService(postgresRepo)
+	mediaService := services.NewMediaService(postgresRepo, mongoRepo)
 
 	// Initialize handlers
-	h := handlers.NewHandlers(authService, profileService, aiService, healthService)
+	h := handlers.NewHandlers(authService, profileService, aiService, healthService, mediaService)
 
 	// Setup router
 	r := mux.NewRouter()
@@ -79,6 +80,7 @@ func main() {
 	r.HandleFunc("/health", h.HealthCheck).Methods("GET")
 	r.HandleFunc("/register", h.Register).Methods("POST")
 	r.HandleFunc("/login", h.Login).Methods("POST")
+	r.HandleFunc("/refresh", h.RefreshToken).Methods("POST")
 
 	// Authenticated routes
 	authRouter := r.PathPrefix("/api").Subrouter()
@@ -93,6 +95,11 @@ func main() {
 		authRouter.HandleFunc("/regenerate-plan", h.RegenerateWorkoutPlan).Methods("POST")
 		authRouter.HandleFunc("/complete-workout", h.CompleteWorkout).Methods("POST")
 		authRouter.HandleFunc("/progress", h.GetUserProgress).Methods("GET")
+		
+		// Exercise media routes
+		authRouter.HandleFunc("/media", h.GetAllExerciseMedia).Methods("GET")
+		authRouter.HandleFunc("/media", h.SaveExerciseMedia).Methods("POST")
+		authRouter.HandleFunc("/media/{media_id}", h.DeleteExerciseMedia).Methods("DELETE")
 		authRouter.HandleFunc("/rating", h.GetRating).Methods("GET")
 		authRouter.HandleFunc("/motivation", h.GetMotivationalMessage).Methods("GET")
 	}

@@ -1,5 +1,6 @@
 import 'package:android_app/features/path/domain/entities/workout_entity.dart';
 import 'package:android_app/features/path/domain/repositories/workout_path_repository.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -23,6 +24,16 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     try {
       final workouts = await _workoutPathRepository.fetchWorkouts();
       emit(WorkoutStateLoaded(workout: workouts));
+    } on DioException catch (e, s) {
+      if (e.response?.statusCode == 500) {
+        emit(WorkoutStateRefresh());
+        return;
+      }
+      if (kDebugMode) {
+        print('$e, $s');
+        print(e.response?.data['message']);
+        emit(WorkoutStateError());
+      }
     } on Object catch (e, s) {
       if (kDebugMode) print('$e, $s');
       emit(WorkoutStateError());
@@ -72,6 +83,10 @@ class WorkoutStateInitial extends WorkoutState {
 
 class WorkoutStateLoading extends WorkoutState {
   const WorkoutStateLoading();
+}
+
+class WorkoutStateRefresh extends WorkoutState {
+  const WorkoutStateRefresh();
 }
 
 class WorkoutStateLoaded extends WorkoutState {

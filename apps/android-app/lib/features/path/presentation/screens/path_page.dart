@@ -22,10 +22,62 @@ class PathPage extends StatelessWidget {
         title: Text('Training'),
         titleTextStyle: AppTextStyles.chatTitle,
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () => context.pushRoute(
+              GlossaryRoute(
+                exercises: [
+                  Exercise(
+                    exerciseId: 'ex001',
+                    name: 'Push-Up',
+                    muscleGroup: 'Chest',
+                    sets: 3,
+                    reps: 15,
+                    restSec: 60,
+                    notes: 'Keep your core tight and back straight.',
+                    technique:
+                        'Lower your body until your chest nearly touches the floor, then push back up.',
+                    pictureUrl: 'https://i.pinimg.com/736x/47/72/90/477290deb87fcba55a99c10c41186240.jpg',
+                  ),
+                  Exercise(
+                    exerciseId: 'ex002',
+                    name: 'Squat',
+                    muscleGroup: 'Legs',
+                    sets: 4,
+                    reps: 12,
+                    restSec: 90,
+                    notes:
+                        'Keep knees in line with toes. Don’t let heels lift.',
+                    technique:
+                        'Lower your hips back and down as if sitting in a chair, then drive through your heels to stand.',
+                    pictureUrl: 'https://www.shutterstock.com/image-illustration/bodyweight-squat-thighs-exercise-male-600w-2329917681.jpg',
+                  ),
+                  Exercise(
+                    exerciseId: 'ex003',
+                    name: 'Plank',
+                    muscleGroup: 'Core',
+                    sets: 3,
+                    reps: 1,
+                    // Each rep is a hold
+                    restSec: 45,
+                    notes: 'Maintain a straight line from head to heels.',
+                    technique:
+                        'Hold the plank position with elbows under shoulders and core engaged for 30–60 seconds.',
+                    pictureUrl: 'https://blog.trainerlist.com/wp-content/uploads/2024/07/plankkk.jpg',
+                  ),
+                ],
+              ),
+            ),
+            icon: Icon(Icons.book),
+          ),
+        ],
       ),
       body: BlocBuilder<WorkoutBloc, WorkoutState>(
         builder: (BuildContext context, WorkoutState state) {
-          if (state is WorkoutStateLoading) {
+          if (state is WorkoutStateLoading || state is WorkoutStateRefresh) {
+            if (state is WorkoutStateRefresh) {
+              context.read<WorkoutBloc>().add(WorkoutEventGenerate());
+            }
             return Center(child: CircularProgressIndicator());
           } else if (state is WorkoutStateError) {
             return Center(
@@ -79,19 +131,21 @@ class WorkoutPath extends StatelessWidget {
     final current = workouts[index];
     final status = current.status;
 
-    if (status == 'complete') return WorkoutStatus.completed;
+    if (status == 'done') return WorkoutStatus.completed;
 
     final prevCompleted = workouts
         .sublist(0, index)
-        .where((w) => w.status == 'complete')
+        .where((w) => w.status == 'done')
         .isNotEmpty;
 
     final hasPreviousPlanned = workouts
         .sublist(0, index)
-        .any((w) => w.status == 'planned');
+        .any((w) => w.status == 'planned' || w.status == 'expired');
 
     if ((!hasPreviousPlanned && prevCompleted) ||
-        (index == 0 && workouts[index].status == 'planned')) {
+        (index == 0 &&
+            (workouts[index].status == 'planned' ||
+                workouts[index].status == 'expired'))) {
       return WorkoutStatus.current;
     }
 
@@ -152,7 +206,14 @@ class WorkoutPath extends StatelessWidget {
           node = GestureDetector(
             onTap: () {
               context.pushRoute(
-                WorkoutRoute(name: workout.name, exercises: workout.exercises),
+                WorkoutRoute(
+                  name: workout.name,
+                  exercises: workout.exercises,
+                  isCurrentTraining:
+                      workout.status == 'planned' ||
+                      workout.status == 'expired',
+                  workoutId: workout.workoutId,
+                ),
               );
             },
             child: node,

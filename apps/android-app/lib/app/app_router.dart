@@ -11,13 +11,12 @@ import '../features/settings/presentation/screens/profile_page.dart';
 import '../features/path/presentation/screens/workouts_page.dart';
 import '../features/path/presentation/screens/workout_page.dart';
 import '../features/path/domain/entities/workout_entity.dart';
-
+import '../features/path/presentation/screens/glossary_page.dart';
 
 part 'app_router.gr.dart';
 
 @AutoRouterConfig()
 class AppRouter extends _$AppRouter {
-
   @override
   RouteType get defaultRouteType => RouteType.custom(
     durationInMilliseconds: 300,
@@ -45,10 +44,16 @@ class AppRouter extends _$AppRouter {
       path: '/home',
       children: [
         AutoRoute(page: ChatRoute.page, path: 'chat'),
-        AutoRoute(page: WorkoutsRoute.page, path: 'workouts', initial: true, children: [
-          AutoRoute(page: WorkoutRoute.page, path: 'workout'),
-          AutoRoute(page: PathRoute.page, path: '')
-        ]),
+        AutoRoute(
+          page: WorkoutsRoute.page,
+          path: 'workouts',
+          initial: true,
+          children: [
+            AutoRoute(page: GlossaryRoute.page, path: 'glossary'),
+            AutoRoute(page: WorkoutRoute.page, path: 'workout'),
+            AutoRoute(page: PathRoute.page, path: ''),
+          ],
+        ),
         AutoRoute(
           page: SettingsRoute.page,
           path: 'settings',

@@ -39,13 +39,16 @@ func TestRatingEndpointIntegration(t *testing.T) {
 	mockMongoRepo := &mockMongoRepo{}
 
 	// Initialize services
-	authService := services.NewAuthService(mockPostgresRepo, cfg.JWTSecret, cfg.JWTExpiration)
+	authService := services.NewAuthService(mockPostgresRepo, cfg.JWTSecret, cfg.JWTExpiration, 7*24*time.Hour)
 	profileService := services.NewProfileService(mockPostgresRepo)
 	aiService := services.NewAIService(mockPostgresRepo, mockMongoRepo, "")
 	healthService := services.NewHealthService(mockPostgresRepo)
 
+	// Initialize services
+	mediaService := services.NewMediaService(mockPostgresRepo, mockMongoRepo)
+
 	// Initialize handlers
-	h := handlers.NewHandlers(authService, profileService, aiService, healthService)
+	h := handlers.NewHandlers(authService, profileService, aiService, healthService, mediaService)
 
 	// Setup router
 	r := mux.NewRouter()
@@ -144,6 +147,18 @@ func (m *mockMongoRepo) GetRating(ctx context.Context) ([]models.UserRating, err
 		{UserID: 1, TotalWorkouts: 25, MaxConsecutive: 7, Score: 32},
 		{UserID: 2, TotalWorkouts: 15, MaxConsecutive: 5, Score: 20},
 	}, nil
+}
+
+func (m *mockMongoRepo) SaveExerciseMedia(ctx context.Context, media *models.ExerciseMedia) error {
+	return nil
+}
+
+func (m *mockMongoRepo) GetAllExerciseMedia(ctx context.Context) ([]models.ExerciseMedia, error) {
+	return []models.ExerciseMedia{}, nil
+}
+
+func (m *mockMongoRepo) DeleteExerciseMedia(ctx context.Context, mediaID string) error {
+	return nil
 }
 
 // Benchmark test for rating calculation

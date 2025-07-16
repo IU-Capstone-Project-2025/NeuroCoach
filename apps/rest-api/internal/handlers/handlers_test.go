@@ -74,7 +74,7 @@ func TestRegister_RequestStructure(t *testing.T) {
 }
 
 func TestNewHandlers(t *testing.T) {
-	h := NewHandlers(nil, nil, nil, nil)
+	h := NewHandlers(nil, nil, nil, nil, nil)
 
 	if h == nil {
 		t.Error("Expected non-nil handlers")

@@ -59,6 +59,18 @@ func (m *mockMongoDBRepo) SaveShortPlan(ctx context.Context, plan *models.ShortW
 	return nil
 }
 
+func (m *mockMongoDBRepo) SaveExerciseMedia(ctx context.Context, media *models.ExerciseMedia) error {
+	return nil
+}
+
+func (m *mockMongoDBRepo) GetAllExerciseMedia(ctx context.Context) ([]models.ExerciseMedia, error) {
+	return []models.ExerciseMedia{}, nil
+}
+
+func (m *mockMongoDBRepo) DeleteExerciseMedia(ctx context.Context, mediaID string) error {
+	return nil
+}
+
 func TestAIService_GetRating(t *testing.T) {
 	mockRepo := &mockMongoDBRepo{}
 	service := &AIService{
