@@ -21,22 +21,11 @@ func NewMediaService(repo repository.Repository, mongoRepo repository.MongoDBRep
 }
 
 func (s *MediaService) SaveExerciseMedia(ctx context.Context, req *models.ExerciseMediaRequest) error {
-	// Convert exercise ID from string to ObjectID
-	exerciseID, err := primitive.ObjectIDFromHex(req.ExerciseID)
-	if err != nil {
-		return NewServiceError(
-			http.StatusBadRequest,
-			"Invalid exercise ID format",
-			err,
-		)
-	}
-
 	// Create media object
 	media := &models.ExerciseMedia{
-		ExerciseID:  exerciseID,
+		Name:        req.Name,
 		ImageURL:    req.ImageURL,
 		Description: req.Description,
-		Order:       req.Order,
 	}
 
 	// Save to database
@@ -51,18 +40,9 @@ func (s *MediaService) SaveExerciseMedia(ctx context.Context, req *models.Exerci
 	return nil
 }
 
-func (s *MediaService) GetExerciseMedia(ctx context.Context, exerciseID string) ([]models.ExerciseMedia, error) {
-	// Validate exercise ID format
-	if _, err := primitive.ObjectIDFromHex(exerciseID); err != nil {
-		return nil, NewServiceError(
-			http.StatusBadRequest,
-			"Invalid exercise ID format",
-			err,
-		)
-	}
-
-	// Get media from database
-	media, err := s.MongoDBRepo.GetExerciseMedia(ctx, exerciseID)
+func (s *MediaService) GetAllExerciseMedia(ctx context.Context) ([]models.ExerciseMedia, error) {
+	// Get all media from database
+	media, err := s.MongoDBRepo.GetAllExerciseMedia(ctx)
 	if err != nil {
 		return nil, NewServiceError(
 			http.StatusInternalServerError,
