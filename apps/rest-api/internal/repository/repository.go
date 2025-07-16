@@ -48,6 +48,6 @@ type MongoDBRep interface {
 
 	// Exercise media operations
 	SaveExerciseMedia(ctx context.Context, media *models.ExerciseMedia) error
-	GetExerciseMedia(ctx context.Context, exerciseID string) ([]models.ExerciseMedia, error)
+	GetAllExerciseMedia(ctx context.Context) ([]models.ExerciseMedia, error)
 	DeleteExerciseMedia(ctx context.Context, mediaID string) error
 }

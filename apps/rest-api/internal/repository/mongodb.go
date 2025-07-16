@@ -431,16 +431,11 @@ func (m *MongoDBRepository) SaveExerciseMedia(ctx context.Context, media *models
 	return err
 }
 
-func (m *MongoDBRepository) GetExerciseMedia(ctx context.Context, exerciseID string) ([]models.ExerciseMedia, error) {
-	objID, err := primitive.ObjectIDFromHex(exerciseID)
-	if err != nil {
-		return nil, err
-	}
-
+func (m *MongoDBRepository) GetAllExerciseMedia(ctx context.Context) ([]models.ExerciseMedia, error) {
 	cursor, err := m.mediaCollection.Find(
 		ctx,
-		bson.M{"exercise_id": objID},
-		options.Find().SetSort(bson.M{"order": 1}),
+		bson.M{},
+		options.Find().SetSort(bson.M{"created_at": -1}),
 	)
 	if err != nil {
 		return nil, err

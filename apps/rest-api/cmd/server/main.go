@@ -82,9 +82,9 @@ func main() {
 		authRouter.HandleFunc("/progress", h.GetUserProgress).Methods("GET")
 		
 		// Exercise media routes
-		authRouter.HandleFunc("/exercise/{exercise_id}/media", h.GetExerciseMedia).Methods("GET")
-		authRouter.HandleFunc("/exercise/media", h.SaveExerciseMedia).Methods("POST")
-		authRouter.HandleFunc("/exercise/media/{media_id}", h.DeleteExerciseMedia).Methods("DELETE")
+		authRouter.HandleFunc("/media", h.GetAllExerciseMedia).Methods("GET")
+		authRouter.HandleFunc("/media", h.SaveExerciseMedia).Methods("POST")
+		authRouter.HandleFunc("/media/{media_id}", h.DeleteExerciseMedia).Methods("DELETE")
 		authRouter.HandleFunc("/rating", h.GetRating).Methods("GET")
 		authRouter.HandleFunc("/motivation", h.GetMotivationalMessage).Methods("GET")
 	}

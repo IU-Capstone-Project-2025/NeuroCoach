@@ -26,11 +26,8 @@ func (h *Handlers) SaveExerciseMedia(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *Handlers) GetExerciseMedia(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	exerciseID := vars["exercise_id"]
-
-	media, err := h.MediaService.GetExerciseMedia(r.Context(), exerciseID)
+func (h *Handlers) GetAllExerciseMedia(w http.ResponseWriter, r *http.Request) {
+	media, err := h.MediaService.GetAllExerciseMedia(r.Context())
 	if err != nil {
 		handleServiceError(w, err)
 		return
