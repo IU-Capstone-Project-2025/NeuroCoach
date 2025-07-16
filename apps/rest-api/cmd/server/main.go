@@ -95,7 +95,7 @@ func main() {
 		authRouter.HandleFunc("/regenerate-plan", h.RegenerateWorkoutPlan).Methods("POST")
 		authRouter.HandleFunc("/complete-workout", h.CompleteWorkout).Methods("POST")
 		authRouter.HandleFunc("/progress", h.GetUserProgress).Methods("GET")
-		
+
 		// Exercise media routes
 		authRouter.HandleFunc("/media", h.GetAllExerciseMedia).Methods("GET")
 		authRouter.HandleFunc("/media", h.SaveExerciseMedia).Methods("POST")

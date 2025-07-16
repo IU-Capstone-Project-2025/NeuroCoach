@@ -14,7 +14,7 @@ func TestRespondWithJSON_Extended(t *testing.T) {
 	w := httptest.NewRecorder()
 	data := models.AuthResponse{
 		AccessToken: "test-token",
-		Email: "test@example.com",
+		Email:       "test@example.com",
 	}
 
 	respondWithJSON(w, http.StatusOK, data)

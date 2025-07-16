@@ -2,9 +2,15 @@ basePath: /
 definitions:
   models.AuthResponse:
     properties:
+      access_token:
+        type: string
       email:
         type: string
-      token:
+      expires_in:
+        type: integer
+      refresh_token:
+        type: string
+      token_type:
         type: string
     type: object
   models.ChatHistory:
@@ -75,6 +81,32 @@ definitions:
       technique:
         type: string
     type: object
+  models.ExerciseMedia:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      name:
+        type: string
+    type: object
+  models.ExerciseMediaRequest:
+    properties:
+      description:
+        type: string
+      image_url:
+        type: string
+      name:
+        type: string
+    required:
+    - description
+    - image_url
+    - name
+    type: object
   models.FitnessProfile:
     properties:
       age:
@@ -141,6 +173,13 @@ definitions:
     required:
     - email
     - password
+    type: object
+  models.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
     type: object
   models.RegenerateWorkoutPlanRequest:
     properties:
@@ -344,6 +383,91 @@ paths:
       summary: Generate workout plan
       tags:
       - workout
+  /api/media:
+    get:
+      description: Retrieve all exercise media entries
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ExerciseMedia'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all exercise media
+      tags:
+      - media
+    post:
+      consumes:
+      - application/json
+      description: Save exercise media with image URL and description
+      parameters:
+      - description: Exercise media data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ExerciseMediaRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Save exercise media
+      tags:
+      - media
+  /api/media/{media_id}:
+    delete:
+      description: Delete exercise media by ID
+      parameters:
+      - description: Media ID
+        in: path
+        name: media_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete exercise media
+      tags:
+      - media
   /api/motivation:
     get:
       description: Get AI-generated motivational message
@@ -558,6 +682,47 @@ paths:
             $ref: '#/definitions/models.ErrorResponse'
       summary: Login user
       tags:
+      - auth
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      - application/json
+      description: |-
+        Generate new access token using refresh token
+        Generate new access token using refresh token
+      parameters:
+      - description: Refresh token data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RefreshTokenRequest'
+      - description: Refresh token data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RefreshTokenRequest'
+      produces:
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Refresh access token
+      tags:
+      - auth
       - auth
   /register:
     post:
