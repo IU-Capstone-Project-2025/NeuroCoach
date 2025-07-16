@@ -63,7 +63,7 @@ func (m *mockMongoDBRepo) SaveExerciseMedia(ctx context.Context, media *models.E
 	return nil
 }
 
-func (m *mockMongoDBRepo) GetExerciseMedia(ctx context.Context, exerciseID string) ([]models.ExerciseMedia, error) {
+func (m *mockMongoDBRepo) GetAllExerciseMedia(ctx context.Context) ([]models.ExerciseMedia, error) {
 	return []models.ExerciseMedia{}, nil
 }
 
