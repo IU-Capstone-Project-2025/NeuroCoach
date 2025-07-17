@@ -29,11 +29,12 @@ void main() {
     const email = 'test@example.com';
     const password = 'password';
     const token = 'token';
+    const refreshToken = 'refresh';
     const rememberMe = true;
 
     test('emits [Loading, Loaded] and calls rememberUser on login success', () async {
-      when(mockLoginRepository.login(email, password, rememberMe)).thenAnswer((_) async => token);
-      when(mockRememberMeRepository.rememberUser(jwtToken: token, email: email)).thenAnswer((_) async {});
+      when(mockLoginRepository.login(email, password, rememberMe)).thenAnswer((_) async => [token, refreshToken]);
+      when(mockRememberMeRepository.rememberUser(jwtToken: token, refreshToken: refreshToken, email: email)).thenAnswer((_) async {});
 
       expectLater(
         bloc.stream,
@@ -44,12 +45,12 @@ void main() {
       );
 
       bloc.add(const LoginEventLogin(email: email, password: password, rememberMe: rememberMe));
-      await untilCalled(mockRememberMeRepository.rememberUser(jwtToken: token, email: email));
-      verify(mockRememberMeRepository.rememberUser(jwtToken: token, email: email)).called(1);
+      await untilCalled(mockRememberMeRepository.rememberUser(jwtToken: token, refreshToken: refreshToken, email: email));
+      verify(mockRememberMeRepository.rememberUser(jwtToken: token, refreshToken: refreshToken, email: email)).called(1);
     });
 
     test('emits [Loading, Loaded] and does not call rememberUser on login with empty token', () async {
-      when(mockLoginRepository.login(email, password, rememberMe)).thenAnswer((_) async => '');
+      when(mockLoginRepository.login(email, password, rememberMe)).thenAnswer((_) async => []);
 
       expectLater(
         bloc.stream,
@@ -61,7 +62,7 @@ void main() {
 
       bloc.add(const LoginEventLogin(email: email, password: password, rememberMe: rememberMe));
       await untilCalled(mockLoginRepository.login(email, password, rememberMe));
-      verifyNever(mockRememberMeRepository.rememberUser(jwtToken: anyNamed('jwtToken'), email: anyNamed('email')));
+      verifyNever(mockRememberMeRepository.rememberUser(jwtToken: anyNamed('jwtToken'), refreshToken: anyNamed('refreshToken'), email: anyNamed('email')));
     });
 
     test('emits [Loading, Error] on login failure', () async {
@@ -91,8 +92,8 @@ void main() {
         'Beginner',
         30,
         rememberMe,
-      )).thenAnswer((_) async => token);
-      when(mockRememberMeRepository.rememberUser(jwtToken: token, email: email)).thenAnswer((_) async {});
+      )).thenAnswer((_) async => [token, refreshToken]);
+      when(mockRememberMeRepository.rememberUser(jwtToken: token, refreshToken: refreshToken, email: email)).thenAnswer((_) async {});
 
       expectLater(
         bloc.stream,
@@ -115,8 +116,8 @@ void main() {
         availableMinutes: 30,
         rememberMe: rememberMe,
       ));
-      await untilCalled(mockRememberMeRepository.rememberUser(jwtToken: token, email: email));
-      verify(mockRememberMeRepository.rememberUser(jwtToken: token, email: email)).called(1);
+      await untilCalled(mockRememberMeRepository.rememberUser(jwtToken: token, refreshToken: refreshToken, email: email));
+      verify(mockRememberMeRepository.rememberUser(jwtToken: token, refreshToken: refreshToken, email: email)).called(1);
     });
 
     test('emits [Loading, Loaded] and does not call rememberUser on signup with empty token', () async {
@@ -132,7 +133,7 @@ void main() {
         'Beginner',
         30,
         rememberMe,
-      )).thenAnswer((_) async => '');
+      )).thenAnswer((_) async => []);
 
       expectLater(
         bloc.stream,
@@ -168,7 +169,7 @@ void main() {
         30,
         rememberMe,
       ));
-      verifyNever(mockRememberMeRepository.rememberUser(jwtToken: anyNamed('jwtToken'), email: anyNamed('email')));
+      verifyNever(mockRememberMeRepository.rememberUser(jwtToken: anyNamed('jwtToken'), refreshToken: anyNamed('refreshToken'), email: anyNamed('email')));
     });
 
     test('emits [Loading, Error] on signup failure', () async {
