@@ -65,10 +65,10 @@ export const Landing = ({ onNavigateToTraining }: LandingProps): JSX.Element => 
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <span className="font-['AR_One_Sans',Helvetica] text-white text-xl font-bold">
-                FitCoach AI
+                NeuroCoach
               </span>
             </div>
-            <Button 
+            <Button
               onClick={onNavigateToTraining}
               className="bg-[#666eff] hover:bg-[#5555ee] text-white px-6 py-2 rounded-full"
             >
@@ -87,18 +87,18 @@ export const Landing = ({ onNavigateToTraining }: LandingProps): JSX.Element => 
               <span className="text-[#666eff] block">AI Fitness Coach</span>
             </h1>
             <p className="font-['AR_One_Sans',Helvetica] text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              Transform your fitness journey with personalized workouts, real-time coaching, 
+              Transform your fitness journey with personalized workouts, real-time coaching,
               and comprehensive progress tracking. All powered by advanced AI technology.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
+              <Button
                 onClick={onNavigateToTraining}
                 className="bg-[#666eff] hover:bg-[#5555ee] text-white px-8 py-4 text-lg rounded-full flex items-center"
               >
                 Get Started Free
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 className="border-[#666eff] text-[#666eff] hover:bg-[#666eff] hover:text-white px-8 py-4 text-lg rounded-full"
               >
@@ -253,17 +253,17 @@ export const Landing = ({ onNavigateToTraining }: LandingProps): JSX.Element => 
           <p className="font-['AR_One_Sans',Helvetica] text-xl text-gray-300 mb-8">
             Join thousands of users who have already achieved their fitness goals with FitCoach AI
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button 
+            <Button
               onClick={handleDownload}
               className="bg-[#666eff] hover:bg-[#5555ee] text-white px-8 py-4 text-lg rounded-full flex items-center justify-center"
             >
               <Download className="mr-2 w-5 h-5" />
               Download App
             </Button>
-            <Button 
-             onClick={onNavigateToTraining}
+            <Button
+              onClick={onNavigateToTraining}
               variant="outline"
               className="border-[#666eff] text-[#666eff] hover:bg-[#666eff] hover:text-white px-8 py-4 text-lg rounded-full"
             >

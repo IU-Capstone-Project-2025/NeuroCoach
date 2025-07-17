@@ -248,7 +248,7 @@ const profileData = {
 export const Frame = (): JSX.Element => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState<number | null>(null);
-  const [expandedExercises, setExpandedExercises] = useState<{[key: number]: boolean}>({3: true});
+  const [expandedExercises, setExpandedExercises] = useState<{ [key: number]: boolean }>({ 3: true });
   const [showProfile, setShowProfile] = useState(false);
 
   const handleStepClick = (stepId: number) => {
@@ -280,7 +280,7 @@ export const Frame = (): JSX.Element => {
     return (
       <div className="min-h-screen bg-[#1f1f1f] relative overflow-hidden">
         {/* Background image - responsive */}
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80"
           style={{
             backgroundImage: "url('/search-photoroom-1.png')"
@@ -363,7 +363,7 @@ export const Frame = (): JSX.Element => {
                             <ChevronDownIcon className="h-5 w-5 text-white" />
                           )}
                         </div>
-                        
+
                         {achievement.score && (
                           <div className="mt-4">
                             <div className="flex items-center justify-between mb-2">
@@ -375,7 +375,7 @@ export const Frame = (): JSX.Element => {
                               </span>
                             </div>
                             <div className="w-full bg-[#5b5b5b] rounded-full h-3">
-                              <div 
+                              <div
                                 className="bg-[#666eff] h-3 rounded-full transition-all duration-300"
                                 style={{ width: `${achievement.progress}%` }}
                               />
@@ -412,7 +412,7 @@ export const Frame = (): JSX.Element => {
                           {profileData.nickname}
                         </p>
                       </div>
-                      
+
                       <div>
                         <span className="font-['AR_One_Sans',Helvetica] text-white text-sm opacity-80">
                           HEIGHT
@@ -421,7 +421,7 @@ export const Frame = (): JSX.Element => {
                           {profileData.height}
                         </p>
                       </div>
-                      
+
                       <div>
                         <span className="font-['AR_One_Sans',Helvetica] text-white text-sm opacity-80">
                           WEIGHT
@@ -430,7 +430,7 @@ export const Frame = (): JSX.Element => {
                           {profileData.weight}
                         </p>
                       </div>
-                      
+
                       <div>
                         <span className="font-['AR_One_Sans',Helvetica] text-white text-sm opacity-80">
                           LEVEL OF TRAINING
@@ -457,7 +457,7 @@ export const Frame = (): JSX.Element => {
                         </span>
                       </div>
                       <div className="w-full bg-[#5b5b5b] rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-[#666eff] h-2 rounded-full"
                           style={{ width: `${profileData.stats.passedPercentage}%` }}
                         />
@@ -474,7 +474,7 @@ export const Frame = (): JSX.Element => {
                         </span>
                       </div>
                       <div className="w-full bg-[#5b5b5b] rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-[#666eff] h-2 rounded-full"
                           style={{ width: `${(profileData.stats.completedExercises / profileData.stats.totalExercises) * 100}%` }}
                         />
@@ -490,13 +490,13 @@ export const Frame = (): JSX.Element => {
                           HOW MANY CALORIES BURNED PER DAY
                         </span>
                       </div>
-                      
+
                       <div className="flex items-end justify-between h-32 mb-2">
                         {profileData.stats.caloriesPerDay.map((day, index) => (
                           <div key={index} className="flex flex-col items-center flex-1">
-                            <div 
+                            <div
                               className="bg-[#666eff] w-4 rounded-t-sm mb-1"
-                              style={{ 
+                              style={{
                                 height: `${(day.calories / 600) * 100}%`,
                                 minHeight: '20px'
                               }}
@@ -504,7 +504,7 @@ export const Frame = (): JSX.Element => {
                           </div>
                         ))}
                       </div>
-                      
+
                       <div className="flex justify-between text-xs">
                         {profileData.stats.caloriesPerDay.map((day, index) => (
                           <span key={index} className="font-['AR_One_Sans',Helvetica] text-white text-xs">
@@ -512,7 +512,7 @@ export const Frame = (): JSX.Element => {
                           </span>
                         ))}
                       </div>
-                      
+
                       {/* Y-axis labels */}
                       <div className="absolute right-2 top-4 flex flex-col justify-between h-24 text-xs">
                         <span className="font-['AR_One_Sans',Helvetica] text-white text-xs">600</span>
@@ -532,11 +532,11 @@ export const Frame = (): JSX.Element => {
 
   if (selectedWorkout) {
     const workout = workoutPlans[selectedWorkout as keyof typeof workoutPlans];
-    
+
     return (
       <div className="min-h-screen bg-[#1f1f1f] relative overflow-hidden">
         {/* Background image - responsive */}
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80"
           style={{
             backgroundImage: "url('/search-photoroom-1.png')"
@@ -663,7 +663,7 @@ export const Frame = (): JSX.Element => {
                             <h4 className="font-['AR_One_Sans',Helvetica] font-bold text-base mb-3">
                               Exercise Technique
                             </h4>
-                            
+
                             {exercise.details.technique.startingPosition && (
                               <div className="mb-4">
                                 <p className="font-['AR_One_Sans',Helvetica] font-semibold text-sm mb-1">
@@ -712,7 +712,7 @@ export const Frame = (): JSX.Element => {
   return (
     <div className="min-h-screen bg-[#1f1f1f] relative overflow-hidden">
       {/* Background image - responsive */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80"
         style={{
           backgroundImage: "url('/search-photoroom-1.png')"
@@ -794,7 +794,7 @@ export const Frame = (): JSX.Element => {
                 />
                 <span className="text-white">Home</span>
               </Button>
-              <Button 
+              <Button
                 className="h-[37px] w-full bg-[#666eff] rounded-[20px] border-[0.5px] border-[#f5f5f563] shadow-[inset_-2px_2px_7px_1px_#00000054]"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
@@ -811,7 +811,7 @@ export const Frame = (): JSX.Element => {
 
       {/* Main content area - responsive layout */}
       <div className="relative z-10 flex flex-col lg:flex-row min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-5rem)] p-4 md:p-6 lg:p-8 gap-4 lg:gap-8">
-        
+
         {/* Left section - Steps and Coach */}
         <div className="flex-1 lg:max-w-md xl:max-w-lg">
           {/* Numbered steps section - responsive grid */}
