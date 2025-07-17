@@ -289,6 +289,7 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                         if (height != null &&
                             weight != null &&
                             height > 0 &&
+                            height < 300 &&
                             weight > 0) {
                           context.read<SignUpBloc>().add(
                             SignUpEventGetHeightWeight(height, weight),
@@ -358,7 +359,6 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                 );
 
               case SignUpStateGetLevelAvailableTime():
-
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -404,8 +404,7 @@ class SignUpPageContentsState extends State<SignUpPageContents> {
                         final hours =
                             int.tryParse(_hoursController.text.trim()) ?? 0;
                         final minutes =
-                            int.tryParse(_minutesController.text.trim()) ??
-                            0;
+                            int.tryParse(_minutesController.text.trim()) ?? 0;
                         final totalMinutes = hours * 60 + minutes;
 
                         if (_selectedLevel != null &&

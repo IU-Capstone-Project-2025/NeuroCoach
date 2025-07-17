@@ -1,3 +1,4 @@
+import 'package:android_app/app/presentation/scopes/app_config_scope.dart';
 import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -43,18 +44,54 @@ class ProfilePage extends StatelessWidget {
             ),
             body: SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow('Height', '${profile.height} cm'),
-                  _buildInfoRow('Weight', '${profile.weight} kg'),
-                  _buildInfoRow('Age', '${profile.age}'),
-                  _buildInfoRow('Goal', _formatGoal(profile.goal)),
-                  _buildInfoRow('Health Issues', _formatList(profile.healthIssues)),
-                  _buildInfoRow('Timeframe', profile.timeframe),
-                  _buildInfoRow('Fitness Level', _capitalize(profile.fitnessLevel)),
-                  _buildInfoRow('Available Time/Day', '${profile.availableMinutes} minutes'),
-                ],
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: AppColors.grey.withAlpha(99),
+                  borderRadius: BorderRadius.circular(16.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 16.0,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: AppColors.grey,
+                            radius: 12.0,
+                            child: Icon(
+                              Icons.person,
+                              color: AppColors.messageGrey,
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            AppConfigScope.of(context).email!,
+                            style: AppTextStyles.textButton.copyWith(
+                              fontSize: 20,
+                            ),
+                          ),
+                        ],
+                      ),
+                      _buildInfoRow('Height', '${profile.height.ceil()} cm'),
+                      _buildInfoRow('Weight', '${profile.weight.ceil()} kg'),
+                      _buildInfoRow('Age', '${profile.age}'),
+                      _buildInfoRow(
+                        'Health Issues',
+                        _formatList(profile.healthIssues),
+                      ),
+                      _buildInfoRow(
+                        'Fitness Level',
+                        _capitalize(profile.fitnessLevel),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           );
@@ -67,29 +104,19 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildInfoRow(String title, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: AppTextStyles.textField.copyWith(color: AppColors.grey)),
-          const SizedBox(height: 4),
+          Text(
+            title,
+            style: AppTextStyles.textField.copyWith(color: AppColors.white),
+          ),
+          const SizedBox(height: 2),
           Text(value, style: AppTextStyles.textButton),
         ],
       ),
     );
-  }
-
-  String _formatGoal(String goal) {
-    switch (goal) {
-      case 'weight_loss':
-        return 'Weight Loss';
-      case 'muscle_gain':
-        return 'Muscle Gain';
-      case 'endurance':
-        return 'Endurance';
-      default:
-        return _capitalize(goal);
-    }
   }
 
   String _formatList(List<String> items) {

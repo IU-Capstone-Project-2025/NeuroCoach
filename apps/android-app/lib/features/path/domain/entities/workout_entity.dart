@@ -1,4 +1,6 @@
-class WorkoutEntity {
+import 'package:equatable/equatable.dart';
+
+class WorkoutEntity implements EquatableMixin {
   final String workoutId;
   final String name;
   final String description;
@@ -24,9 +26,15 @@ class WorkoutEntity {
           .toList(),
     );
   }
+
+  @override
+  List<Object?> get props => [workoutId, name, description, status, exercises];
+
+  @override
+  bool? get stringify => true;
 }
 
-class Exercise {
+class Exercise implements EquatableMixin {
   final String exerciseId;
   final String name;
   final String muscleGroup;
@@ -62,4 +70,52 @@ class Exercise {
       pictureUrl: json['url'] != null ? json['url'] as String : null,
     );
   }
+
+  @override
+  List<Object?> get props => [
+    exerciseId,
+    name,
+    muscleGroup,
+    sets,
+    reps,
+    restSec,
+    notes,
+    technique,
+    pictureUrl,
+  ];
+
+  @override
+  bool? get stringify => true;
+}
+
+class SimplifiedExerciseEntity implements EquatableMixin {
+  final String id;
+  final String name;
+  final String imageUrl;
+  final String description;
+  final DateTime createdAt;
+
+  SimplifiedExerciseEntity({
+    required this.id,
+    required this.name,
+    required this.imageUrl,
+    required this.description,
+    required this.createdAt,
+  });
+
+  factory SimplifiedExerciseEntity.fromJson(Map<String, dynamic> json) {
+    return SimplifiedExerciseEntity(
+      id: json['id'],
+      name: json['name'],
+      imageUrl: json['image_url'],
+      description: json['description'],
+      createdAt: DateTime.parse(json['created_at']),
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, name, imageUrl, description, createdAt];
+
+  @override
+  bool? get stringify => true;
 }

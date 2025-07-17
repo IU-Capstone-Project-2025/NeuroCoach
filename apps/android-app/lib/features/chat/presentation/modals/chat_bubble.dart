@@ -77,7 +77,7 @@ class ChatMessageBubble extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   color: AppColors.grey,
                 ),
-                child: const Icon(Icons.person, color: Colors.white, size: 16),
+                child: Icon(Icons.person, color: AppColors.messageGrey, size: 16),
               ),
             ),
         ],

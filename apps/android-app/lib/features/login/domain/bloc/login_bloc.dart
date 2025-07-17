@@ -26,14 +26,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   Future<void> _onLogin(LoginEventLogin event, Emitter<LoginState> emit) async {
     emit(const LoginStateLoading());
     try {
-      final String token = await _loginRepository.login(
+      final List<String> tokens = await _loginRepository.login(
         event.email,
         event.password,
         event.rememberMe,
       );
 
-      if (token.isNotEmpty) {
-        _rememberMeRepository.rememberUser(jwtToken: token, email: event.email);
+      if (tokens.isNotEmpty) {
+        _rememberMeRepository.rememberUser(jwtToken: tokens[0], refreshToken: tokens[1], email: event.email);
       }
       emit(LoginStateLoaded(email: event.email));
     } on Object catch (e, s) {
@@ -48,7 +48,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   ) async {
     emit(const LoginStateLoading());
     try {
-      final String token = await _loginRepository.signUp(
+      final List<String> tokens = await _loginRepository.signUp(
         event.email,
         event.password,
         event.height,
@@ -62,8 +62,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         event.rememberMe,
       );
 
-      if (token.isNotEmpty) {
-        _rememberMeRepository.rememberUser(jwtToken: token, email: event.email);
+      if (tokens.isNotEmpty) {
+        _rememberMeRepository.rememberUser(jwtToken: tokens[0], refreshToken: tokens[1], email: event.email);
       }
       emit(LoginStateLoaded(email: event.email));
     } on Object catch (e, s) {

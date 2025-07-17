@@ -47,7 +47,7 @@ class DioClient {
         BaseOptions(
           baseUrl: AppVariables.baseUrl,
           connectTimeout: const Duration(seconds: 10),
-          receiveTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 60),
           contentType: 'application/json',
         ),
       ) {

@@ -17,6 +17,7 @@ class InitPage extends StatelessWidget {
       create: (_) => InitBloc(
         initRepository: depScope.initRepository,
         healthRepository: depScope.healthRepository,
+        rememberMeRepository: depScope.rememberMeRepository,
       )..add(InitEventCheck()),
       child: BlocListener<InitBloc, InitState>(
         listener: (context, state) {

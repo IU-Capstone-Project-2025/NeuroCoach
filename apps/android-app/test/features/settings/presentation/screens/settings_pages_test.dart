@@ -14,8 +14,11 @@ import 'package:android_app/app/presentation/scopes/app_config_scope.dart';
 import 'package:android_app/app/domain/entities/app_config.dart';
 
 class MockProfileBloc extends Mock implements ProfileBloc {}
+
 class MockLogoutBloc extends Mock implements LogoutBloc {}
+
 class MockChatBloc extends Mock implements ChatBloc {}
+
 class MockWorkoutBloc extends Mock implements WorkoutBloc {}
 
 void main() {
@@ -26,10 +29,16 @@ void main() {
   });
 
   group('ProfilePage', () {
-    testWidgets('shows loading indicator for loading/initial state', (tester) async {
+    testWidgets('shows loading indicator for loading/initial state', (
+      tester,
+    ) async {
       final bloc = MockProfileBloc();
       when(() => bloc.state).thenReturn(ProfileStateLoading());
-      whenListen(bloc, Stream<ProfileState>.empty(), initialState: ProfileStateLoading());
+      whenListen(
+        bloc,
+        Stream<ProfileState>.empty(),
+        initialState: ProfileStateLoading(),
+      );
       final chatBloc = MockChatBloc();
       final logoutBloc = MockLogoutBloc();
       final workoutBloc = MockWorkoutBloc();
@@ -52,7 +61,11 @@ void main() {
       final logoutBloc = MockLogoutBloc();
       final workoutBloc = MockWorkoutBloc();
       when(() => bloc.state).thenReturn(ProfileStateError());
-      whenListen(bloc, Stream<ProfileState>.empty(), initialState: ProfileStateError());
+      whenListen(
+        bloc,
+        Stream<ProfileState>.empty(),
+        initialState: ProfileStateError(),
+      );
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
@@ -82,8 +95,14 @@ void main() {
         availableMinutes: 45,
         updatedAt: DateTime.now(),
       );
-      when(() => bloc.state).thenReturn(ProfileStateLoaded(userProfile: userProfile));
-      whenListen(bloc, Stream<ProfileState>.empty(), initialState: ProfileStateLoaded(userProfile: userProfile));
+      when(
+        () => bloc.state,
+      ).thenReturn(ProfileStateLoaded(userProfile: userProfile));
+      whenListen(
+        bloc,
+        Stream<ProfileState>.empty(),
+        initialState: ProfileStateLoaded(userProfile: userProfile),
+      );
       await tester.pumpWidget(
         MultiBlocProvider(
           providers: [
@@ -92,17 +111,18 @@ void main() {
             BlocProvider<LogoutBloc>.value(value: logoutBloc),
             BlocProvider<WorkoutBloc>.value(value: workoutBloc),
           ],
-          child: MaterialApp(home: const ProfilePage()),
+          child: AppConfigScope(
+            appConfig: AppConfig(email: 'test@example.com'),
+            child: MaterialApp(home: const ProfilePage()),
+          ),
         ),
       );
-      expect(find.text('180.0 cm'), findsOneWidget);
-      expect(find.text('75.0 kg'), findsOneWidget);
+      expect(find.text('test@example.com'), findsOneWidget);
+      expect(find.text('180 cm'), findsOneWidget);
+      expect(find.text('75 kg'), findsOneWidget);
       expect(find.text('30'), findsOneWidget);
-      expect(find.text('Weight Loss'), findsOneWidget);
       expect(find.text('Asthma'), findsOneWidget);
-      expect(find.text('3 months'), findsOneWidget);
       expect(find.text('Beginner'), findsOneWidget);
-      expect(find.text('45 minutes'), findsOneWidget);
     });
   });
 
@@ -159,7 +179,9 @@ void main() {
       );
       await tester.tap(find.text('Logout'));
       await tester.pump();
-      verify(() => logoutBloc.add(any(that: isA<LogoutEventLogout>()))).called(1);
+      verify(
+        () => logoutBloc.add(any(that: isA<LogoutEventLogout>())),
+      ).called(1);
     });
   });
 }

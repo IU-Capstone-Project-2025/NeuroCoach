@@ -1,4 +1,3 @@
-import 'package:android_app/constants/app_colors.dart';
 import 'package:android_app/constants/app_text_styles.dart';
 import 'package:android_app/features/path/domain/bloc/workout_path_bloc.dart';
 import 'package:android_app/features/path/domain/entities/workout_entity.dart';
@@ -7,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../app/app_router.dart';
-
-enum WorkoutStatus { completed, current, planned }
+import '../components/path_node.dart';
 
 @RoutePage()
 class PathPage extends StatelessWidget {
@@ -25,48 +23,7 @@ class PathPage extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () => context.pushRoute(
-              GlossaryRoute(
-                exercises: [
-                  Exercise(
-                    exerciseId: 'ex001',
-                    name: 'Push-Up',
-                    muscleGroup: 'Chest',
-                    sets: 3,
-                    reps: 15,
-                    restSec: 60,
-                    notes: 'Keep your core tight and back straight.',
-                    technique:
-                        'Lower your body until your chest nearly touches the floor, then push back up.',
-                    pictureUrl: 'https://i.pinimg.com/736x/47/72/90/477290deb87fcba55a99c10c41186240.jpg',
-                  ),
-                  Exercise(
-                    exerciseId: 'ex002',
-                    name: 'Squat',
-                    muscleGroup: 'Legs',
-                    sets: 4,
-                    reps: 12,
-                    restSec: 90,
-                    notes:
-                        'Keep knees in line with toes. Don’t let heels lift.',
-                    technique:
-                        'Lower your hips back and down as if sitting in a chair, then drive through your heels to stand.',
-                    pictureUrl: 'https://www.shutterstock.com/image-illustration/bodyweight-squat-thighs-exercise-male-600w-2329917681.jpg',
-                  ),
-                  Exercise(
-                    exerciseId: 'ex003',
-                    name: 'Plank',
-                    muscleGroup: 'Core',
-                    sets: 3,
-                    reps: 1,
-                    // Each rep is a hold
-                    restSec: 45,
-                    notes: 'Maintain a straight line from head to heels.',
-                    technique:
-                        'Hold the plank position with elbows under shoulders and core engaged for 30–60 seconds.',
-                    pictureUrl: 'https://blog.trainerlist.com/wp-content/uploads/2024/07/plankkk.jpg',
-                  ),
-                ],
-              ),
+              GlossaryRoute(),
             ),
             icon: Icon(Icons.book),
           ),
@@ -127,16 +84,15 @@ class WorkoutPath extends StatelessWidget {
 
   const WorkoutPath({super.key, required this.workouts});
 
-  WorkoutStatus _getStatus(int index) {
+  NodeStatus _getStatus(int index) {
     final current = workouts[index];
     final status = current.status;
 
-    if (status == 'done') return WorkoutStatus.completed;
+    if (status == 'done') return NodeStatus.done;
 
     final prevCompleted = workouts
         .sublist(0, index)
-        .where((w) => w.status == 'done')
-        .isNotEmpty;
+        .any((w) => w.status == 'done');
 
     final hasPreviousPlanned = workouts
         .sublist(0, index)
@@ -144,23 +100,11 @@ class WorkoutPath extends StatelessWidget {
 
     if ((!hasPreviousPlanned && prevCompleted) ||
         (index == 0 &&
-            (workouts[index].status == 'planned' ||
-                workouts[index].status == 'expired'))) {
-      return WorkoutStatus.current;
+            (status == 'planned' || status == 'expired'))) {
+      return NodeStatus.current;
     }
 
-    return WorkoutStatus.planned;
-  }
-
-  Color _getColor(WorkoutStatus status) {
-    switch (status) {
-      case WorkoutStatus.completed:
-        return AppColors.lily;
-      case WorkoutStatus.current:
-        return AppColors.white;
-      case WorkoutStatus.planned:
-        return AppColors.blackNode;
-    }
+    return NodeStatus.planned;
   }
 
   CrossAxisAlignment _getAlignment(int index) {
@@ -181,44 +125,7 @@ class WorkoutPath extends StatelessWidget {
       itemBuilder: (context, index) {
         final workout = workouts[index];
         final status = _getStatus(index);
-        final isTappable =
-            status == WorkoutStatus.current ||
-            status == WorkoutStatus.completed;
-
-        Widget node = Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            color: _getColor(status),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Center(
-            child: Icon(
-              status == WorkoutStatus.completed
-                  ? Icons.check
-                  : Icons.fitness_center,
-              color: AppColors.black,
-            ),
-          ),
-        );
-
-        if (isTappable) {
-          node = GestureDetector(
-            onTap: () {
-              context.pushRoute(
-                WorkoutRoute(
-                  name: workout.name,
-                  exercises: workout.exercises,
-                  isCurrentTraining:
-                      workout.status == 'planned' ||
-                      workout.status == 'expired',
-                  workoutId: workout.workoutId,
-                ),
-              );
-            },
-            child: node,
-          );
-        }
+        final isTappable = status == NodeStatus.current || status == NodeStatus.done;
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -228,7 +135,27 @@ class WorkoutPath extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: _getAlignment(index),
-                  children: [Padding(padding: _getPadding(index), child: node)],
+                  children: [
+                    Padding(
+                      padding: _getPadding(index),
+                      child: PathNode(
+                        status: status,
+                        index: index + 1,
+                        onTap: isTappable
+                            ? () {
+                          context.pushRoute(
+                            WorkoutRoute(
+                              name: workout.name,
+                              exercises: workout.exercises,
+                              isCurrentTraining: workout.status == 'planned' || workout.status == 'expired',
+                              workoutId: workout.workoutId,
+                            ),
+                          );
+                        }
+                            : () {}, // fallback for untappable
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -238,3 +165,4 @@ class WorkoutPath extends StatelessWidget {
     );
   }
 }
+
