@@ -242,16 +242,37 @@ func (s *AIService) Chat(ctx context.Context, message string) (string, error) {
 		)
 	}
 
-	// Get user's fitness profile to check if they're a beginner
+	// Get user's fitness profile for context
 	profile, err := s.Repo.GetFitnessProfile(ctx, userID)
 	isBeginner := false
-	if err == nil && profile != nil && profile.FitnessLevel == "beginner" {
-		isBeginner = true
+	if err == nil && profile != nil {
+		// Set beginner flag if applicable
+		if profile.FitnessLevel == "beginner" {
+			isBeginner = true
+		}
+		// Log that we found the profile
+		fmt.Printf("Found user profile for user %d: %s level, goal: %s\n", userID, profile.FitnessLevel, profile.Goal)
+	} else {
+		fmt.Printf("No profile found for user %d or error: %v\n", userID, err)
 	}
 
-	// Build conversation context with beginner mode if needed
+	// Build conversation context with user profile
 	systemContent := "You are a helpful fitness assistant. Provide concise and helpful responses about fitness, nutrition, and health."
-	if isBeginner {
+
+	// Add user profile to system context
+	if profile != nil {
+		systemContent += fmt.Sprintf("\n\nUser Profile:\n- Age: %d\n- Height: %.1f cm\n- Weight: %.1f kg\n- Fitness Goal: %s\n- Fitness Level: %s\n- Available Time: %d minutes per week",
+			profile.Age, profile.Height, profile.Weight, profile.Goal, profile.FitnessLevel, profile.AvailableMinutes)
+
+		if len(profile.HealthIssues) > 0 {
+			systemContent += "\n- Health Issues: " + strings.Join(profile.HealthIssues, ", ")
+		}
+
+		// Add beginner mode instructions if user is a beginner
+		if profile.FitnessLevel == "beginner" {
+			systemContent += "\n\nIMPORTANT: The user is a beginner with limited fitness knowledge. Explain concepts in very simple terms as if explaining to a kid. Avoid technical jargon, use basic language, and include extra safety tips."
+		}
+	} else if isBeginner {
 		systemContent += " IMPORTANT: The user is a beginner with limited fitness knowledge. Explain concepts in very simple terms as if explaining to a kid. Avoid technical jargon, use basic language, and include extra safety tips."
 	}
 
@@ -774,9 +795,28 @@ func (s *AIService) GenerateMotivationalMessage(ctx context.Context) (string, er
 		return "You're doing amazing! Keep up the great work!", nil
 	}
 
+	// Get user profile for more personalized motivation
+	profile, _ := s.Repo.GetFitnessProfile(ctx, userID)
+
+	systemContent := "Generate a short motivational fitness message. Be encouraging and specific."
+	userContent := fmt.Sprintf("User: %d workouts, %d consecutive days, %s level.",
+		progress.TotalWorkouts, progress.ConsecutiveDays, progress.Level)
+
+	// Add profile information if available
+	if profile != nil {
+		userContent += fmt.Sprintf(" Goal: %s, Fitness level: %s, Age: %d.",
+			profile.Goal, profile.FitnessLevel, profile.Age)
+
+		if len(profile.HealthIssues) > 0 {
+			userContent += fmt.Sprintf(" Health issues: %s.", strings.Join(profile.HealthIssues, ", "))
+		}
+	}
+
+	userContent += " Motivate them!"
+
 	messages := []OpenRouterMessage{
-		{Role: "system", Content: "Generate a short motivational fitness message. Be encouraging and specific."},
-		{Role: "user", Content: fmt.Sprintf("User: %d workouts, %d consecutive days, %s level. Motivate them!", progress.TotalWorkouts, progress.ConsecutiveDays, progress.Level)},
+		{Role: "system", Content: systemContent},
+		{Role: "user", Content: userContent},
 	}
 
 	response, err := s.Client.CreateChatCompletion(ctx, messages, false)

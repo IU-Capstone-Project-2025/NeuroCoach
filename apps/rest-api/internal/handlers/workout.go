@@ -95,7 +95,7 @@ func (h *Handlers) GetRating(w http.ResponseWriter, r *http.Request) {
 
 // GetMotivationalMessage godoc
 // @Summary Get motivational message
-// @Description Get AI-generated motivational message
+// @Description Get personalized AI-generated motivational message based on user profile and progress
 // @Tags motivation
 // @Produce json
 // @Security BearerAuth

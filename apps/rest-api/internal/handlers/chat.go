@@ -9,7 +9,7 @@ import (
 
 // Chat godoc
 // @Summary Chat with AI
-// @Description Send message to AI assistant
+// @Description Send message to AI assistant with user profile context
 // @Tags chat
 // @Accept json
 // @Produce json
