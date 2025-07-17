@@ -250,10 +250,6 @@ func (s *AIService) Chat(ctx context.Context, message string) (string, error) {
 		if profile.FitnessLevel == "beginner" {
 			isBeginner = true
 		}
-		// Log that we found the profile
-		fmt.Printf("Found user profile for user %d: %s level, goal: %s\n", userID, profile.FitnessLevel, profile.Goal)
-	} else {
-		fmt.Printf("No profile found for user %d or error: %v\n", userID, err)
 	}
 
 	// Build conversation context with user profile
