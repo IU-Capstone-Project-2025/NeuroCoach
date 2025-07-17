@@ -53,7 +53,11 @@ class SettingsMainPage extends StatelessWidget {
                             child: CircleAvatar(
                               radius: 24,
                               backgroundColor: AppColors.grey,
-                              child: Icon(Icons.person, size: 36),
+                              child: Icon(
+                                Icons.person,
+                                color: AppColors.messageGrey,
+                                size: 36,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8.0),
@@ -77,7 +81,8 @@ class SettingsMainPage extends StatelessWidget {
             ),
             const SizedBox(height: 48),
             TextButton(
-              onPressed: () => context.read<LogoutBloc>().add(LogoutEventLogout()),
+              onPressed: () =>
+                  context.read<LogoutBloc>().add(LogoutEventLogout()),
               child: Text('Logout'),
             ),
           ],
