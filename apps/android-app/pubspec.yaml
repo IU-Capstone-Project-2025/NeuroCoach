@@ -52,6 +52,9 @@ dev_dependencies:
   bloc_test: any
   build_runner: ^2.4.6
   auto_route_generator: any
+  flutter_native_splash: ^2.4.0
+  flutter_launcher_icons: ^0.13.1
+
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -102,3 +105,13 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_native_splash:
+  color: "#1F1F1F"
+  image: assets/robot.png
+  android: true
+  ios: false
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon.png"
