@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:android_app/constants/app_text_styles.dart';
+import 'package:android_app/uikit/app_confirmation_dialog.dart';
+import 'package:android_app/uikit/buttons/app_button.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -69,17 +71,21 @@ class _RestTimerState extends State<RestTimer> {
           _formatTime(_remainingTime),
           style: AppTextStyles.textButton.copyWith(fontSize: 32.0),
         ),
-        if (kDebugMode) ...[
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _remainingTime = 5;
-              });
-            },
-            child: const Text('Set to 5 seconds (debug)'),
-          ),
-        ],
+        const SizedBox(height: 24),
+        AppButton(
+          onPressed: () async {
+            final isConfirmed = await AppConfirmationDialog.show(
+              context,
+              title: 'Are you sure you want to skip rest?',
+            );
+
+            if (isConfirmed) {
+              _timer?.cancel();
+              widget.onFinished();
+            }
+          },
+          text: 'Skip',
+        ),
       ],
     );
   }
