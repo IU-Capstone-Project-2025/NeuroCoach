@@ -1,3 +1,5 @@
+import 'package:android_app/uikit/app_confirmation_dialog.dart';
+
 import '../../../../constants/app_colors.dart';
 import '../../../../constants/app_text_styles.dart';
 import 'package:flutter/material.dart';
@@ -53,9 +55,20 @@ class ActiveExerciseView extends StatelessWidget {
           if (exercise.notes.isNotEmpty) _infoRow("Notes", exercise.notes),
 
           const Spacer(),
-
           Center(
-            child: AppButton(onPressed: onDoneWithSet, text: "Done with set"),
+            child: AppButton(
+              text: "Done with set",
+              onPressed: () async {
+                final confirmed = await AppConfirmationDialog.show(
+                  context,
+                  title: "Are you sure you completed all the reps?",
+                );
+
+                if (confirmed) {
+                  onDoneWithSet();
+                }
+              },
+            ),
           ),
         ],
       ),
