@@ -32,8 +32,8 @@ func TestLoad_DefaultValues(t *testing.T) {
 		t.Errorf("Expected port '8080', got %s", cfg.Port)
 	}
 
-	if cfg.JWTExpiration != 15*time.Minute {
-		t.Errorf("Expected JWT expiration 15m, got %v", cfg.JWTExpiration)
+	if cfg.JWTExpiration != 60*time.Minute {
+		t.Errorf("Expected JWT expiration 60m, got %v", cfg.JWTExpiration)
 	}
 
 	if cfg.SkipDatabase {
