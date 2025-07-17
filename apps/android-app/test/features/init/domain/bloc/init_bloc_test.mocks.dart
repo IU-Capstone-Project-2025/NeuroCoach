@@ -9,6 +9,8 @@ import 'package:android_app/features/init/domain/repositories/health_repository.
     as _i5;
 import 'package:android_app/features/init/domain/repositories/init_repository.dart'
     as _i2;
+import 'package:android_app/features/login/domain/repositories/remember_me_repository.dart'
+    as _i6;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i4;
 
@@ -57,6 +59,30 @@ class MockInitRepository extends _i1.Mock implements _i2.InitRepository {
         ),
         returnValue: _i3.Future<bool>.value(false),
       ) as _i3.Future<bool>);
+
+  @override
+  _i3.Future<String> getRefreshToken() => (super.noSuchMethod(
+        Invocation.method(
+          #getRefreshToken,
+          [],
+        ),
+        returnValue: _i3.Future<String>.value(_i4.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getRefreshToken,
+            [],
+          ),
+        )),
+      ) as _i3.Future<String>);
+
+  @override
+  _i3.Future<bool> removeRefreshToken() => (super.noSuchMethod(
+        Invocation.method(
+          #removeRefreshToken,
+          [],
+        ),
+        returnValue: _i3.Future<bool>.value(false),
+      ) as _i3.Future<bool>);
 }
 
 /// A class which mocks [HealthRepository].
@@ -75,4 +101,43 @@ class MockHealthRepository extends _i1.Mock implements _i5.HealthRepository {
         ),
         returnValue: _i3.Future<bool>.value(false),
       ) as _i3.Future<bool>);
+
+  @override
+  _i3.Future<List<String>> refresh(String? refreshToken) => (super.noSuchMethod(
+        Invocation.method(
+          #refresh,
+          [refreshToken],
+        ),
+        returnValue: _i3.Future<List<String>>.value(<String>[]),
+      ) as _i3.Future<List<String>>);
+}
+
+/// A class which mocks [RememberMeRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockRememberMeRepository extends _i1.Mock
+    implements _i6.RememberMeRepository {
+  MockRememberMeRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.Future<void> rememberUser({
+    required String? jwtToken,
+    required String? refreshToken,
+    required String? email,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #rememberUser,
+          [],
+          {
+            #jwtToken: jwtToken,
+            #refreshToken: refreshToken,
+            #email: email,
+          },
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 }

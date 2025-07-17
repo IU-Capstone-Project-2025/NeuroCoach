@@ -24,7 +24,7 @@ class HealthNetworkRepository extends HealthRepository {
   @override
   Future<List<String>> refresh(String refreshToken) async {
     try {
-      final response = await NetworkService().request(method: 'PORT',
+      final response = await NetworkService().request(method: 'POST',
         path: '/refresh',
         body: {'refresh_token': refreshToken},
       );

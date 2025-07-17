@@ -1,3 +1,4 @@
+import 'package:android_app/features/login/domain/repositories/remember_me_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -10,19 +11,23 @@ import 'init_bloc_test.mocks.dart';
 @GenerateMocks([
   InitRepository,
   HealthRepository,
+  RememberMeRepository,
 ])
 void main() {
   group('InitBloc', () {
     late MockInitRepository mockInitRepository;
     late MockHealthRepository mockHealthRepository;
+    late MockRememberMeRepository mockRememberMeRepository;
     late InitBloc bloc;
 
     setUp(() {
       mockInitRepository = MockInitRepository();
       mockHealthRepository = MockHealthRepository();
+      mockRememberMeRepository = MockRememberMeRepository();
       bloc = InitBloc(
         initRepository: mockInitRepository,
         healthRepository: mockHealthRepository,
+        rememberMeRepository: mockRememberMeRepository
       );
     });
 

@@ -33,13 +33,9 @@ abstract class _$AppRouter extends RootStackRouter {
       );
     },
     GlossaryRoute.name: (routeData) {
-      final args = routeData.argsAs<GlossaryRouteArgs>();
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: GlossaryPage(
-          key: args.key,
-          exercises: args.exercises,
-        ),
+        child: const GlossaryPage(),
       );
     },
     HomeRoute.name: (routeData) {
@@ -153,40 +149,16 @@ class ChatRoute extends PageRouteInfo<void> {
 
 /// generated route for
 /// [GlossaryPage]
-class GlossaryRoute extends PageRouteInfo<GlossaryRouteArgs> {
-  GlossaryRoute({
-    Key? key,
-    required List<Exercise> exercises,
-    List<PageRouteInfo>? children,
-  }) : super(
+class GlossaryRoute extends PageRouteInfo<void> {
+  const GlossaryRoute({List<PageRouteInfo>? children})
+      : super(
           GlossaryRoute.name,
-          args: GlossaryRouteArgs(
-            key: key,
-            exercises: exercises,
-          ),
           initialChildren: children,
         );
 
   static const String name = 'GlossaryRoute';
 
-  static const PageInfo<GlossaryRouteArgs> page =
-      PageInfo<GlossaryRouteArgs>(name);
-}
-
-class GlossaryRouteArgs {
-  const GlossaryRouteArgs({
-    this.key,
-    required this.exercises,
-  });
-
-  final Key? key;
-
-  final List<Exercise> exercises;
-
-  @override
-  String toString() {
-    return 'GlossaryRouteArgs{key: $key, exercises: $exercises}';
-  }
+  static const PageInfo<void> page = PageInfo<void>(name);
 }
 
 /// generated route for

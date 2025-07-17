@@ -8,9 +8,8 @@ import 'dart:async' as _i3;
 import 'package:android_app/features/login/domain/repositories/login_repository.dart'
     as _i2;
 import 'package:android_app/features/login/domain/repositories/remember_me_repository.dart'
-    as _i5;
+    as _i4;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i4;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -35,7 +34,7 @@ class MockLoginRepository extends _i1.Mock implements _i2.LoginRepository {
   }
 
   @override
-  _i3.Future<String> login(
+  _i3.Future<List<String>> login(
     String? email,
     String? password,
     bool? rememberMe,
@@ -49,21 +48,11 @@ class MockLoginRepository extends _i1.Mock implements _i2.LoginRepository {
             rememberMe,
           ],
         ),
-        returnValue: _i3.Future<String>.value(_i4.dummyValue<String>(
-          this,
-          Invocation.method(
-            #login,
-            [
-              email,
-              password,
-              rememberMe,
-            ],
-          ),
-        )),
-      ) as _i3.Future<String>);
+        returnValue: _i3.Future<List<String>>.value(<String>[]),
+      ) as _i3.Future<List<String>>);
 
   @override
-  _i3.Future<String> signUp(
+  _i3.Future<List<String>> signUp(
     String? email,
     String? password,
     int? height,
@@ -93,33 +82,15 @@ class MockLoginRepository extends _i1.Mock implements _i2.LoginRepository {
             rememberMe,
           ],
         ),
-        returnValue: _i3.Future<String>.value(_i4.dummyValue<String>(
-          this,
-          Invocation.method(
-            #signUp,
-            [
-              email,
-              password,
-              height,
-              weight,
-              age,
-              goal,
-              healthIssues,
-              timeframe,
-              fitnessLevel,
-              availableMinutes,
-              rememberMe,
-            ],
-          ),
-        )),
-      ) as _i3.Future<String>);
+        returnValue: _i3.Future<List<String>>.value(<String>[]),
+      ) as _i3.Future<List<String>>);
 }
 
 /// A class which mocks [RememberMeRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockRememberMeRepository extends _i1.Mock
-    implements _i5.RememberMeRepository {
+    implements _i4.RememberMeRepository {
   MockRememberMeRepository() {
     _i1.throwOnMissingStub(this);
   }
@@ -127,6 +98,7 @@ class MockRememberMeRepository extends _i1.Mock
   @override
   _i3.Future<void> rememberUser({
     required String? jwtToken,
+    required String? refreshToken,
     required String? email,
   }) =>
       (super.noSuchMethod(
@@ -135,6 +107,7 @@ class MockRememberMeRepository extends _i1.Mock
           [],
           {
             #jwtToken: jwtToken,
+            #refreshToken: refreshToken,
             #email: email,
           },
         ),

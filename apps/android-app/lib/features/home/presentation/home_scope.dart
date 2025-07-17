@@ -1,5 +1,6 @@
 import 'package:android_app/app/app_router.dart';
 import 'package:android_app/features/path/domain/bloc/finish_workout_bloc.dart';
+import 'package:android_app/features/path/domain/bloc/glossary_bloc.dart';
 import 'package:android_app/features/path/domain/bloc/workout_path_bloc.dart';
 import 'package:android_app/features/settings/domain/bloc/logout_bloc.dart';
 import 'package:android_app/features/settings/domain/bloc/profile_bloc.dart';
@@ -41,6 +42,11 @@ class HomeScope extends StatelessWidget {
         ),
         BlocProvider(
           create: (_) => FinishWorkoutBloc(depScope.finishWorkoutRepository),
+        ),
+        BlocProvider(
+          create: (_) =>
+              GlossaryBloc(glossaryRepository: depScope.glossaryRepository)
+                ..add(GlossaryEventLoad()),
         ),
       ],
       child: MultiBlocListener(

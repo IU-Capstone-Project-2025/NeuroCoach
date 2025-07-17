@@ -29,6 +29,7 @@ class InitBloc extends Bloc<InitEvent, InitState> {
     final String token = await _initRepository.getJWTToken();
     final String refreshToken = await _initRepository.getRefreshToken();
     if (kDebugMode) print('Got JWT token: $token');
+    if (kDebugMode) print('Got refresh token: $refreshToken');
     if (token.isEmpty || refreshToken.isEmpty) {
       NetworkService().removeToken();
       await _initRepository.removeJWTToken();
