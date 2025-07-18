@@ -88,6 +88,10 @@ func (m *mockPostgresRepo) GetUserByEmail(ctx context.Context, email string) (*m
 	return &models.User{ID: 1, Email: email}, nil
 }
 
+func (m *mockPostgresRepo) GetUserByID(ctx context.Context, userID int) (*models.User, error) {
+	return &models.User{ID: userID, Email: "user@example.com"}, nil
+}
+
 func (m *mockPostgresRepo) SaveFitnessProfile(ctx context.Context, userID int, profile *models.FitnessProfile) error {
 	return nil
 }

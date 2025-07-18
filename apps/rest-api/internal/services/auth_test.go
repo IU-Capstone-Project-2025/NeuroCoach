@@ -46,6 +46,15 @@ func (m *mockAuthRepo) GetUserByEmail(ctx context.Context, email string) (*model
 	return nil, repository.ErrNotFound
 }
 
+func (m *mockAuthRepo) GetUserByID(ctx context.Context, userID int) (*models.User, error) {
+	for _, user := range m.users {
+		if user.ID == userID {
+			return user, nil
+		}
+	}
+	return nil, repository.ErrNotFound
+}
+
 func (m *mockAuthRepo) SaveFitnessProfile(ctx context.Context, userID int, profile *models.FitnessProfile) error {
 	return nil
 }
@@ -201,6 +210,69 @@ func TestAuthService_Login_UserNotFound(t *testing.T) {
 	_, err := service.Login(context.Background(), loginReq)
 	if err == nil {
 		t.Error("Expected error for non-existent user")
+	}
+
+	if svcErr, ok := err.(ServiceError); ok {
+		if svcErr.Code != 401 {
+			t.Errorf("Expected status code 401, got %d", svcErr.Code)
+		}
+	}
+}
+
+func TestAuthService_RefreshToken_Success(t *testing.T) {
+	repo := newMockAuthRepo()
+	service := NewAuthService(repo, "test-secret", time.Hour, 7*24*time.Hour)
+
+	// Register user first
+	registerReq := models.RegisterRequest{
+		Email:    "test@example.com",
+		Password: "password123",
+	}
+	regResp, err := service.Register(context.Background(), registerReq)
+	if err != nil {
+		t.Fatalf("Registration failed: %v", err)
+	}
+
+	// Now refresh token
+	refreshReq := models.RefreshTokenRequest{
+		RefreshToken: regResp.RefreshToken,
+	}
+
+	resp, err := service.RefreshToken(context.Background(), refreshReq)
+
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if resp == nil {
+		t.Fatal("Expected response, got nil")
+	}
+
+	if resp.Email != regResp.Email {
+		t.Errorf("Expected email %s, got %s", regResp.Email, resp.Email)
+	}
+
+	if resp.AccessToken == "" {
+		t.Error("Expected non-empty access token")
+	}
+
+	if resp.RefreshToken == "" {
+		t.Error("Expected non-empty refresh token")
+	}
+}
+
+func TestAuthService_RefreshToken_InvalidToken(t *testing.T) {
+	repo := newMockAuthRepo()
+	service := NewAuthService(repo, "test-secret", time.Hour, 7*24*time.Hour)
+
+	// Try with invalid token
+	refreshReq := models.RefreshTokenRequest{
+		RefreshToken: "invalid-token",
+	}
+
+	_, err := service.RefreshToken(context.Background(), refreshReq)
+	if err == nil {
+		t.Error("Expected error for invalid token")
 	}
 
 	if svcErr, ok := err.(ServiceError); ok {

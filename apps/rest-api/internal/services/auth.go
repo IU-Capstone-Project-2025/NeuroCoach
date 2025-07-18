@@ -179,7 +179,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, req models.RefreshTokenR
 	}
 
 	// Get user details
-	user, err := s.Repo.GetUserByEmail(ctx, "") // We'll need to modify this
+	user, err := s.Repo.GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, NewServiceError(
 			http.StatusUnauthorized,

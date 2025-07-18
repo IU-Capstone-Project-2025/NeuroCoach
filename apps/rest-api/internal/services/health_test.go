@@ -21,6 +21,10 @@ func (m *mockHealthRepo) GetUserByEmail(ctx context.Context, email string) (*mod
 	return nil, nil
 }
 
+func (m *mockHealthRepo) GetUserByID(ctx context.Context, userID int) (*models.User, error) {
+	return nil, nil
+}
+
 func (m *mockHealthRepo) SaveFitnessProfile(ctx context.Context, userID int, profile *models.FitnessProfile) error {
 	return nil
 }
