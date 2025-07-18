@@ -29,6 +29,10 @@ func (m *mockProfileRepo) GetUserByEmail(ctx context.Context, email string) (*mo
 	return &models.User{ID: 1, Email: email}, nil
 }
 
+func (m *mockProfileRepo) GetUserByID(ctx context.Context, userID int) (*models.User, error) {
+	return &models.User{ID: userID, Email: "user@example.com"}, nil
+}
+
 func (m *mockProfileRepo) SaveFitnessProfile(ctx context.Context, userID int, profile *models.FitnessProfile) error {
 	m.profiles[userID] = profile
 	return nil

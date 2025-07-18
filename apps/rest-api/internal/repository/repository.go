@@ -9,6 +9,7 @@ type Repository interface {
 	// User operations
 	CreateUser(ctx context.Context, email, passwordHash string) (int, error)
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
+	GetUserByID(ctx context.Context, userID int) (*models.User, error)
 
 	// Fitness profile operations
 	SaveFitnessProfile(ctx context.Context, userID int, profile *models.FitnessProfile) error

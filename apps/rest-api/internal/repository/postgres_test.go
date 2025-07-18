@@ -47,6 +47,15 @@ func (m *mockPostgresRepo) GetUserByEmail(ctx context.Context, email string) (*m
 	return nil, ErrNotFound
 }
 
+func (m *mockPostgresRepo) GetUserByID(ctx context.Context, userID int) (*models.User, error) {
+	for _, user := range m.users {
+		if user.ID == userID {
+			return user, nil
+		}
+	}
+	return nil, ErrNotFound
+}
+
 func (m *mockPostgresRepo) SaveFitnessProfile(ctx context.Context, userID int, profile *models.FitnessProfile) error {
 	m.profiles[userID] = profile
 	return nil
