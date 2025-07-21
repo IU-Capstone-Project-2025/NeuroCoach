@@ -1,9 +1,9 @@
 FROM node:18-alpine AS build
 WORKDIR /app
-COPY package.json vite.config.js ./
-COPY src ./src
-COPY index.html ./
-RUN npm install && npm run build
+COPY package.json package-lock.json ./
+RUN npm install
+COPY . .
+RUN npm run build
 
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html

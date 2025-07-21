@@ -629,3 +629,4 @@ Authorization: Bearer <token>
 - 401: Unauthorized - Invalid or missing authentication
 - 404: Not Found - Resource not found
 - 503: Service Unavailable - Service health check failed
+

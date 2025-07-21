@@ -5,3 +5,4 @@ dist/
 /apps/*/go.sum
 /apps/*/rest-api
 /apps/*/ws-api
+.DS_Store
