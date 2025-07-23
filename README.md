@@ -9,8 +9,8 @@
 - `libs/`: Shared libraries and utilities
 
 ## Development
-- To access frontend, just go to [blazz1t.online](http://blazz1t.online/) in your browser
-- To access rest api, go to [api.blazz1t.online/health](http://api.blazz1t.online/health)
+- To access frontend, just go to [blazz1t.online](https://blazz1t.online:8443/) in your browser
+- To access rest api, go to [api.blazz1t.online/health](https://api.blazz1t.online:8443/health)
 - To access ws-api, use `wscat -c ws://ws.blazz1t.online/ws/`
 - To access the android app, navigate to `apps/android-app/releases` and download the `.apk` file on your Android device.
 - To build your own local version of the project, do the following steps:
