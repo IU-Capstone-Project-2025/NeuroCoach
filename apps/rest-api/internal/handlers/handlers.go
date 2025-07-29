@@ -3,6 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"os"
+	"path/filepath"
+	"fmt"
 
 	"rest-api/internal/middleware"
 	"rest-api/internal/models"
@@ -59,4 +62,31 @@ func handleServiceError(w http.ResponseWriter, err error) {
 	} else {
 		respondWithError(w, http.StatusInternalServerError, "Internal server error")
 	}
+}
+
+func ApkDownloadHandler(w http.ResponseWriter, r *http.Request) {
+	apkPath := filepath.Join("downloads", "app-release.apk")
+
+	// Open the file
+	file, err := os.Open(apkPath)
+	if err != nil {
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+	defer file.Close()
+
+	// Get file info to check if it exists
+	fileInfo, err := file.Stat()
+	if err != nil {
+		http.Error(w, "File error", http.StatusInternalServerError)
+		return
+	}
+
+	// Set the headers
+	w.Header().Set("Content-Disposition", "attachment; filename=app-release.apk")
+	w.Header().Set("Content-Type", "application/vnd.android.package-archive")
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
+
+	// Serve the file
+	http.ServeContent(w, r, fileInfo.Name(), fileInfo.ModTime(), file)
 }
